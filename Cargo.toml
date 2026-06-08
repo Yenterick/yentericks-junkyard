@@ -1,0 +1,13 @@
+[package]
+name = "yentericks-junkyard"
+version = "0.1.0"
+edition = "2024"
+authors = ["Yenterick <yenterick@gmail.com>"]
+description = "A terminal-based backend scaffolding tool written in Rust."
+readme = "README.md"
+repository = "https://github.com/Yenterick/yentericks-junkyard"
+license = "MIT"
+license-file = "LICENSE"
+keywords = ["tui", "backend", "scaffold"]
+
+[dependencies]

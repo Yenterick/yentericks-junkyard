@@ -11,6 +11,6 @@
 
 ---
 
-A terminal-based backend scaffolding tool written in C.
+A terminal-based backend scaffolding tool written in Rust.
 
 Generate project structures, models, controllers, routes, and other boilerplate code without leaving your terminal.
