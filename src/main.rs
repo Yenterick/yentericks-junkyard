@@ -1,6 +1,9 @@
+use std::env;
 use ratatui::{DefaultTerminal, Frame};
 
 fn main() -> color_eyre::Result<()> {
+    let args: Vec<String> = env::args().collect();
+    dbg!(args);
     color_eyre::install()?;
     ratatui::run(app)?;
     Ok(())
