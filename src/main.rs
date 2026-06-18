@@ -1,23 +1,16 @@
 use std::env;
-use ratatui::{DefaultTerminal, Frame};
 
-fn main() -> color_eyre::Result<()> {
+// Module imports
+mod filesystem;
+
+fn main() {
     let args: Vec<String> = env::args().collect();
-    dbg!(args);
-    color_eyre::install()?;
-    ratatui::run(app)?;
-    Ok(())
-}
 
-fn app(terminal: &mut DefaultTerminal) -> std::io::Result<()> {
-    loop {
-        terminal.draw(render)?;
-        if crossterm::event::read()?.is_key_press() {
-            break Ok(());
-        }
-    }
-}
+    let name: &String = &args[1];
+    let file_path: &String = &args[2];
 
-fn render(frame: &mut Frame) {
-    frame.render_widget("hello world", frame.area());
+
+    println!("Creating the package {name}...");
+    println!("Working on directory {file_path}");
+    filesystem::directories::mod_test();
 }
