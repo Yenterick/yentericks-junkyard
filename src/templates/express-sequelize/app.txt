@@ -1,0 +1,45 @@
+import "./config/env.js";
+import express from "express";
+import cors from "cors";
+
+// Router imports
+import {{ router_name }}Router from "./routes/{{ router_name }}.js";
+
+// Types import
+import type { Application, Request, Response } from "Express";
+
+// Module imports
+import { log } from "./utils/utils.js";
+import { dbConnection } from "./config/database.js";
+
+// Setup database associations
+import "./models/associations.js"
+
+const app: Application = express();
+
+// App configuration
+const PORT = process.env.PORT;
+app.use(cors({ origin: '*' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes configuration
+app.use("/api/{{ router_name }}", {{ router_name }}Router);
+
+app.get("/api/health", (req: Request, res: Response) => {
+    res.status(200).json({
+        success: true,
+        message: "{{ app_name }} server is up and running!",
+    });
+});
+
+// Start application
+const startApplication = async (): Promise<void> => {
+    await dbConnection();
+
+    app.listen(PORT, '0.0.0.0', () => {
+        log(`{{ app_name }} server is running on port ${PORT}...`);
+    });
+};
+
+startApplication();
