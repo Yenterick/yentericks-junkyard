@@ -1,12 +1,7 @@
-use std::{
-    path::Path,
-    ffi::OsStr,
-    fs,
-    io
-};
+use std::{fs, io, path::PathBuf};
 
 /// Creates the next folder structure on the desired path.
-/// 
+///
 /// ```bash
 /// .
 /// └── server/
@@ -22,18 +17,24 @@ use std::{
 /// filesystem::directories::create_folder_structuree(".");
 /// ```
 pub fn create_folder_structure(path: &str) -> Result<(), io::Error> {
-    let formatted_path: String = format!("{}server/", if path == '.'.to_string() { "" } else { path });
-    let path: &OsStr = Path::new(&formatted_path).as_os_str();
-    fs::create_dir_all(path)?;
+    let mut server_path = PathBuf::from(path);
+    server_path.push("server");
+    fs::create_dir_all(&server_path)?;
 
-    let subfolders: [&str; 6] = ["config", "controllers", "routes", "middlewares", "models", "utils"];
+    let subfolders: [&str; 6] = [
+        "config",
+        "controllers",
+        "routes",
+        "middlewares",
+        "models",
+        "utils",
+    ];
 
     for folder in subfolders {
-        let formatted_subfolder_path: String = format!("{formatted_path}{folder}/");
-        let subfolder_path: &OsStr = Path::new(&formatted_subfolder_path).as_os_str();
-        fs::create_dir(subfolder_path)?;
+        let mut subfolder_path = server_path.clone();
+        subfolder_path.push(folder);
+        fs::create_dir(&subfolder_path)?;
     }
 
     Ok(())
 }
-

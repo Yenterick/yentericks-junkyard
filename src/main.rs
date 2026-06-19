@@ -1,10 +1,11 @@
 use std::env;
 
 // Custom imports
-use crate::filesystem::directories;
+use crate::generators::core;
 
 // Module config
 mod filesystem;
+mod generators;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -14,9 +15,9 @@ fn main() {
 
     println!("Creating the package {name}...");
     println!("Working on directory {path}");
-    
-    match directories::create_folder_structure(path) {
-        Ok(()) => println!("The folder structure was successfully created!"),
-        Err(error) => println!("The folder structure wasn't created due to an error... {error:?}")
+
+    match core::generate_project(name, path) {
+        Ok(()) => println!("The project was successfully created!"),
+        Err(error) => println!("There was an error creating the project... {error}")
     };
 }

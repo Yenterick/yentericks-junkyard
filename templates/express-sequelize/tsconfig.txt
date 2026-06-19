@@ -44,6 +44,6 @@
         "skipLibCheck": true,
         "moduleResolution": "bundler"
     },
-    "include": ["**/*.ts"],
+    "include": ["**/*.ts", "utils.txt", "config.txt"],
     "exclude": ["dist"]
 }
