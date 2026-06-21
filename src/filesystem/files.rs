@@ -3,7 +3,6 @@ use std::{
 };
 
 /// Creates a new file by receiving the desired content and the file path.
-///
 /// ### Examples
 /// ```rust
 /// create_file("Hello world", "./server");
@@ -16,7 +15,6 @@ pub fn create_file(content: &str, path: PathBuf) -> Result<(), io::Error> {
 }
 
 /// Finds the patterns on an already readen file and changes it to the replacement.
-///
 /// ### Examples
 /// ```rust
 /// find_placeholder(&template_content, "app_name", app_name);

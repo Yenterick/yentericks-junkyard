@@ -1,7 +1,6 @@
 use std::{fs, io, path::PathBuf};
 
 /// Creates the next folder structure on the desired path.
-///
 /// ```bash
 /// .
 /// └── server/

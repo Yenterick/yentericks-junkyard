@@ -4,7 +4,6 @@ use std::{fs, io, path::{Path, PathBuf}};
 use crate::filesystem::files;
 
 /// Creates the utils file on the desired path.
-/// 
 /// ### Created File
 /// ```typescript
 /// // Gets a prefix with the actual time to log info

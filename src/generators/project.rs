@@ -4,7 +4,6 @@ use std::{fs, io, path::{Path, PathBuf}};
 use crate::filesystem::files;
 
 /// Creates the package.json file on the desired path.
-/// 
 /// ### Created File
 /// ```json
 /// {
@@ -54,6 +53,30 @@ pub fn create_package_file(app_name: &str, author_name:&str, author_email: &str,
     let file_path: PathBuf = PathBuf::from(path).join("server").join("package.json");
     
     files::create_file(&formatted_content, file_path)?;
+
+    Ok(())
+}
+
+/// Create the .env file on the desired path.
+/// ### Created File
+/// ```env
+/// POSTGRES_DB=
+/// POSTGRES_USER=
+/// POSTGRES_PASSWORD=
+/// POSTGRES_HOST=
+/// POSTGRES_PORT=
+/// ```
+/// ### Examples
+/// ```rust
+/// create_env_file("./example-proyect")
+/// ```
+pub fn create_env_file(path: &str) -> Result<(), io::Error> {
+    let package_template_path: &Path = Path::new("templates/express-sequelize/env.txt");
+    let template_content: String = fs::read_to_string(package_template_path)?;
+
+    let file_path: PathBuf = PathBuf::from(path).join(".env");
+    
+    files::create_file(&template_content, file_path)?;
 
     Ok(())
 }
