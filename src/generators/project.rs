@@ -57,6 +57,74 @@ pub fn create_package_file(app_name: &str, author_name:&str, author_email: &str,
     Ok(())
 }
 
+/// Creates the tsconfig.json file on the desired path.
+/// ### Created File
+/// ```json
+/// {
+///     // Visit https://aka.ms/tsconfig to read more about this file
+///     "compilerOptions": {
+///         // File Layout
+///         // "rootDir": "./src",
+///         // "outDir": "./dist",
+///
+///         // Environment Settings
+///         // See also https://aka.ms/tsconfig/module
+///         "module": "es2022",
+///         "target": "esnext",
+///         "types": [],
+///         "outDir": "./dist",
+///         "rootDir": "./",
+///         // For nodejs:
+///         // "lib": ["esnext"],
+///         // "types": ["node"],
+///         // and npm install -D @types/node
+///
+///         // Other Outputs
+///         "sourceMap": true,
+///         "declaration": true,
+///         "declarationMap": true,
+///
+///         // Stricter Typechecking Options
+///         "noUncheckedIndexedAccess": true,
+///         "exactOptionalPropertyTypes": true,
+///
+///         // Style Options
+///         // "noImplicitReturns": true,
+///         // "noImplicitOverride": true,
+///         // "noUnusedLocals": true,
+///         // "noUnusedParameters": true,
+///         // "noFallthroughCasesInSwitch": true,
+///         // "noPropertyAccessFromIndexSignature": true,
+///
+///         // Recommended Options
+///         "strict": true,
+///         "jsx": "react-jsx",
+///         "verbatimModuleSyntax": true,
+///         "isolatedModules": true,
+///         "noUncheckedSideEffectImports": true,
+///         "moduleDetection": "force",
+///         "skipLibCheck": true,
+///         "moduleResolution": "bundler"
+///     },
+///     "include": ["**/*.ts", "utils.txt", "config.txt"],
+///     "exclude": ["dist"]
+/// }
+/// ```
+/// ### Examples
+/// ```rust
+/// create_tsconfig_file("./example-proyect");
+/// ```
+pub fn create_tsconfig_file(path: &str) -> Result<(), io::Error> {
+    let tsconfig_template_path: &Path = Path::new("templates/express-sequelize/tsconfig.txt");
+    let template_content: String = fs::read_to_string(tsconfig_template_path)?;
+
+    let file_path: PathBuf = PathBuf::from(path).join("server").join("tsconfig.json");
+    
+    files::create_file(&template_content, file_path)?;
+
+    Ok(())
+}
+
 /// Create the .env file on the desired path.
 /// ### Created File
 /// ```env
@@ -68,11 +136,11 @@ pub fn create_package_file(app_name: &str, author_name:&str, author_email: &str,
 /// ```
 /// ### Examples
 /// ```rust
-/// create_env_file("./example-proyect")
+/// create_env_file("./example-proyect");
 /// ```
 pub fn create_env_file(path: &str) -> Result<(), io::Error> {
-    let package_template_path: &Path = Path::new("templates/express-sequelize/env.txt");
-    let template_content: String = fs::read_to_string(package_template_path)?;
+    let env_template_path: &Path = Path::new("templates/express-sequelize/env.txt");
+    let template_content: String = fs::read_to_string(env_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path).join(".env");
     

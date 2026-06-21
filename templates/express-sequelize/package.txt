@@ -1,5 +1,5 @@
 {
-    "name": "{{ app_name }}",
+    "name": "{{ app_name }}-server",
     "version": "1.0.0",
     "description": "{{ app_name }} - Server",
     "license": "ISC",
