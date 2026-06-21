@@ -25,9 +25,8 @@ use crate::filesystem::files;
 /// };
 /// ```
 /// ### Examples
-/// 
 /// ```rust
-/// create_utils_file("app_name", "./server");
+/// create_utils_file("app_name", "./example-proyect");
 /// ```
 pub fn create_utils_file(app_name: &str, path: &str) -> Result<(), io::Error> {
     let utils_template_path: &Path = Path::new("templates/express-sequelize/utils.txt");
