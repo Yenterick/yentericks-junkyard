@@ -23,12 +23,45 @@ pub fn find_placeholder(text: &str, placeholder: &str, replacement: &str) -> Str
     text.replace(&format!("{{{{ {} }}}}", placeholder), replacement)
 }
 
-pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<String>) {
-    let replaced_text: String = String::new();
-    let formatted_text: Vec<String> = text.lines().map(String::from).collect();
-    for line in formatted_text {
-        if let Some(loop_start_index) = text.find("{{ for ") {
+pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<String>) -> String {
+    let mut result: String = text.to_string();
 
+    while let Some(for_start) = result.find("{{ for ") {
+        let relative_header_end: usize = result[for_start..].find("}}").unwrap();
+        let header_end: usize = for_start + relative_header_end;
+        let header: &str = &result[for_start..header_end];
+
+        let content = header.strip_prefix("{{ for ").unwrap();
+        let mut parts: str::SplitWhitespace<'_> = content.split_whitespace();
+
+        let variable = parts.next().unwrap();
+        parts.next().unwrap(); // skips "in"
+        let collection = parts.next().unwrap();
+
+        if collection != loop_target {
+            break;
         }
+
+        let endfor = format!("{{{{ endfor {} }}}}", collection);
+
+        let relative_loop_end: usize = result[header_end..].find(&endfor).unwrap();
+        let loop_end = header_end + relative_loop_end;
+
+        let block = result[header_end + 2..loop_end].trim();
+        let mut expanded: String = String::new();
+
+        for (index, item) in replacement.iter().enumerate() {
+            expanded.push_str(&find_placeholder(block, variable, item));
+
+            if index < replacement.len() - 1 {
+                expanded.push('\n');
+            }
+        }
+
+        let full_block_end: usize = loop_end + endfor.len();
+
+        result.replace_range(for_start..full_block_end, &expanded);
     }
+
+    result
 }

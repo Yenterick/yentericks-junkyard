@@ -149,13 +149,12 @@ pub fn create_env_file(path: &str) -> Result<(), io::Error> {
     Ok(())
 }
 
-pub fn create_app_file(path: &str) -> Result<(), io::Error> {
+pub fn create_app_file(path: &str, routers: Vec<String>) -> Result<(), io::Error> {
     let app_template_content: &Path = Path::new("templates/express-sequelize/app.txt");
     let template_content: String = fs::read_to_string(app_template_content)?;
-    let mut formatted_text: String = String::new(); 
-    files::find_loop_placeholder(&template_content, "routes", vec!(String::from("client"), String::from("products")));
+    let formatted_text: String = files::find_loop_placeholder(&template_content, "routers", routers);
 
-    let file_path: PathBuf = PathBuf::from(path).join("app.ts");
+    let file_path: PathBuf = PathBuf::from(path).join("server").join("app.ts");
 
     files::create_file(&formatted_text, file_path)?;
 
