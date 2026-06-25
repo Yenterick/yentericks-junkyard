@@ -22,3 +22,13 @@ pub fn create_file(content: &str, path: PathBuf) -> Result<(), io::Error> {
 pub fn find_placeholder(text: &str, placeholder: &str, replacement: &str) -> String {
     text.replace(&format!("{{{{ {} }}}}", placeholder), replacement)
 }
+
+pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<String>) {
+    let replaced_text: String = String::new();
+    let formatted_text: Vec<String> = text.lines().map(String::from).collect();
+    for line in formatted_text {
+        if let Some(loop_start_index) = text.find("{{ for ") {
+
+        }
+    }
+}

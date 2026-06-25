@@ -3,7 +3,9 @@ import express from "express";
 import cors from "cors";
 
 // Router imports
-import {{ router_name }}Router from "./routes/{{ router_name }}.js";
+{{ for router in routers }}
+import {{ router }}Router from "./routes/{{ router }}.js";
+{{ endfor routers }}
 
 // Types import
 import type { Application, Request, Response } from "Express";
@@ -24,7 +26,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes configuration
-app.use("/api/{{ router_name }}", {{ router_name }}Router);
+{{ for router in routers }}
+app.use("/api/{{ router }}", {{ router }}Router);
+{{ endfor routers }}
 
 app.get("/api/health", (req: Request, res: Response) => {
     res.status(200).json({
