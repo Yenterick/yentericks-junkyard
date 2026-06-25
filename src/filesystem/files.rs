@@ -1,5 +1,8 @@
 use std::{
-    fs::File, io::{self, Write}, path::PathBuf, str
+    fs::File,
+    io::{self, Write},
+    path::PathBuf,
+    str,
 };
 
 /// Creates a new file by receiving the desired content and the file path.
@@ -9,7 +12,7 @@ use std::{
 /// ```
 pub fn create_file(content: &str, path: PathBuf) -> Result<(), io::Error> {
     let mut file: File = File::create(path)?;
-    let write_buffer:&[u8] = content.as_bytes();
+    let write_buffer: &[u8] = content.as_bytes();
     file.write_all(write_buffer)?;
     Ok(())
 }
@@ -23,7 +26,12 @@ pub fn find_placeholder(text: &str, placeholder: &str, replacement: &str) -> Str
     text.replace(&format!("{{{{ {} }}}}", placeholder), replacement)
 }
 
-pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<String>) -> String {
+/// Finds the patterns for a loop on an already readen file and changes it to the replacement.
+/// ### Examples
+/// ```rust
+/// find_loop_placeholder(&template_content, "routers", routers) /* routers: Vec<String> */
+/// ```
+pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<&str>) -> String {
     let mut result: String = text.to_string();
 
     while let Some(for_start) = result.find("{{ for ") {

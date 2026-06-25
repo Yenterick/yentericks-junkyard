@@ -1,4 +1,7 @@
-use std::{fs, io, path::{Path, PathBuf}};
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
 
 // Custom imports
 use crate::filesystem::files;
@@ -43,15 +46,21 @@ use crate::filesystem::files;
 /// ```rust
 /// create_package_file("app_name", "author", "author@gmail.com", "./example-proyect");
 /// ```
-pub fn create_package_file(app_name: &str, author_name:&str, author_email: &str, path: &str) -> Result<(), io::Error> {
+pub fn create_package_file(
+    app_name: &str,
+    author_name: &str,
+    author_email: &str,
+    path: &str,
+) -> Result<(), io::Error> {
     let package_template_path: &Path = Path::new("templates/express-sequelize/package.txt");
     let template_content: String = fs::read_to_string(package_template_path)?;
-    let mut formatted_content: String = files::find_placeholder(&template_content, "app_name", app_name);
+    let mut formatted_content: String =
+        files::find_placeholder(&template_content, "app_name", app_name);
     formatted_content = files::find_placeholder(&formatted_content, "author_name", author_name);
     formatted_content = files::find_placeholder(&formatted_content, "author_email", author_email);
 
     let file_path: PathBuf = PathBuf::from(path).join("server").join("package.json");
-    
+
     files::create_file(&formatted_content, file_path)?;
 
     Ok(())
@@ -119,7 +128,7 @@ pub fn create_tsconfig_file(path: &str) -> Result<(), io::Error> {
     let template_content: String = fs::read_to_string(tsconfig_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path).join("server").join("tsconfig.json");
-    
+
     files::create_file(&template_content, file_path)?;
 
     Ok(())
@@ -143,20 +152,78 @@ pub fn create_env_file(path: &str) -> Result<(), io::Error> {
     let template_content: String = fs::read_to_string(env_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path).join(".env");
-    
+
     files::create_file(&template_content, file_path)?;
 
     Ok(())
 }
 
-pub fn create_app_file(path: &str, routers: Vec<String>) -> Result<(), io::Error> {
+/// Create the app file on the desired path.
+/// ### Created File
+/// ```typescript
+/// import "./config/dotenv.js";
+/// import express from "express";
+/// import cors from "cors";
+///
+/// // Router imports
+/// {{ for router in routers }}
+/// import {{ router }}Router from "./routes/{{ router }}.js";
+/// {{ endfor routers }}
+///
+/// // Types import
+/// import type { Application, Request, Response } from "Express";
+///
+/// // Module imports
+/// import { log } from "./utils/utils.js";
+/// import { dbConnection } from "./config/database.js";
+///
+/// // Setup database associations
+/// import "./models/associations.js"
+///
+/// const app: Application = express();
+///
+/// // App configuration
+/// const PORT = process.env.PORT;
+/// app.use(cors({ origin: '*' }));
+/// app.use(express.json());
+/// app.use(express.urlencoded({ extended: true }));
+///
+/// // Routes configuration
+/// {{ for router in routers }}
+/// app.use("/api/{{ router }}", {{ router }}Router);
+/// {{ endfor routers }}
+///
+/// app.get("/api/health", (req: Request, res: Response) => {
+///     res.status(200).json({
+///         success: true,
+///         message: "{{ app_name }} server is up and running!",
+///     });
+/// });
+///
+/// // Start application
+/// const startApplication = async (): Promise<void> => {
+///     await dbConnection();
+///
+///     app.listen(PORT, '0.0.0.0', () => {
+///         log(`{{ app_name }} server is running on port ${PORT}...`);
+///     });
+/// };
+///
+/// startApplication();
+/// ```
+/// ### Examples
+/// ```rust
+/// create_app_file("./example-proyect", routers) /* routers: Vec<String> */
+/// ```
+pub fn create_app_file(path: &str, routers: Vec<&str>) -> Result<(), io::Error> {
     let app_template_content: &Path = Path::new("templates/express-sequelize/app.txt");
     let template_content: String = fs::read_to_string(app_template_content)?;
-    let formatted_text: String = files::find_loop_placeholder(&template_content, "routers", routers);
+    let formatted_text: String =
+        files::find_loop_placeholder(&template_content, "routers", routers);
 
     let file_path: PathBuf = PathBuf::from(path).join("server").join("app.ts");
 
     files::create_file(&formatted_text, file_path)?;
 
-    Ok (())
+    Ok(())
 }

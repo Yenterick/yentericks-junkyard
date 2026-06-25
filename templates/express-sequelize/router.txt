@@ -1,0 +1,18 @@
+import { Router } from "express";
+
+// Module imports
+import {
+    select{{ controllerCapitalized }}s,
+    select{{ controllerCapitalized }}byId,
+    update{{ controllerCapitalized }},
+    delete{{ controllerCapitalized }},
+} from "../controller/{{ controller }}.ts";
+
+const router: Router = Router();
+
+router.get('/', select{{ controllerCapitalized }}s);
+router.get("/:id", select{{ controllerCapitalized }}byId);
+router.put("/:id", update{{ controllerCapitalized }});
+router.delete("/:id", delete{{ controllerCapitalized }});
+
+export default router;

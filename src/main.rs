@@ -20,6 +20,6 @@ fn main() {
 
     match core::generate_project(name, author, author_email, path) {
         Ok(()) => println!("The project was successfully created!"),
-        Err(error) => println!("There was an error creating the project... {error}")
+        Err(error) => println!("There was an error creating the project... {error}"),
     };
 }

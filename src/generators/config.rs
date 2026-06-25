@@ -1,4 +1,7 @@
-use std::{fs, io, path::{Path, PathBuf}};
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
 
 // Custom imports
 use crate::filesystem::files;
@@ -8,10 +11,10 @@ use crate::filesystem::files;
 /// ```typescript
 /// import { Sequelize } from '@sequelize/core';
 /// import { PostgresDialect } from '@sequelize/postgres';
-/// 
+///
 /// // Modules import
 /// import { log, sleep } from '../utils/utils.js';
-/// 
+///
 /// // Creating the PostgreSQL sequelize object
 /// export const sequelize = new Sequelize({
 ///     dialect: PostgresDialect,
@@ -22,7 +25,7 @@ use crate::filesystem::files;
 ///     port: Number(process.env.POSTGRES_PORT) || 5432,
 ///     ssl: true
 /// });
-/// 
+///
 /// // Function to connect to PostgreSQL
 /// export const dbConnection = async (): Promise<void> => {
 ///     log('Connecting to PostgreSQL...');
@@ -48,8 +51,11 @@ pub fn create_database_file(path: &str) -> Result<(), io::Error> {
     let database_template_path: &Path = Path::new("templates/express-sequelize/database.txt");
     let template_content: String = fs::read_to_string(database_template_path)?;
 
-    let file_path: PathBuf = PathBuf::from(path).join("server").join("config").join("database.ts");
-    
+    let file_path: PathBuf = PathBuf::from(path)
+        .join("server")
+        .join("config")
+        .join("database.ts");
+
     files::create_file(&template_content, file_path)?;
 
     Ok(())
@@ -61,13 +67,13 @@ pub fn create_database_file(path: &str) -> Result<(), io::Error> {
 /// import dotenv from "dotenv";
 /// import path, { dirname } from "path";
 /// import { fileURLToPath } from "url";
-/// 
+///
 /// const __filename = fileURLToPath(import.meta.url);
 /// const __dirname = dirname(__filename);
-/// 
+///
 /// // Load environment variables from the root directory
 /// dotenv.config({ path: path.join(__dirname, "..", "..", ".env") });
-/// 
+///
 /// ```
 /// ### Examples
 /// create_dotenv_file("./example-proyect");
@@ -75,11 +81,12 @@ pub fn create_dotenv_file(path: &str) -> Result<(), io::Error> {
     let database_template_path: &Path = Path::new("templates/express-sequelize/dotenv.txt");
     let template_content: String = fs::read_to_string(database_template_path)?;
 
-    let file_path: PathBuf = PathBuf::from(path).join("server").join("config").join("dotenv.ts");
-    
+    let file_path: PathBuf = PathBuf::from(path)
+        .join("server")
+        .join("config")
+        .join("dotenv.ts");
+
     files::create_file(&template_content, file_path)?;
 
     Ok(())
 }
-
-
