@@ -1,6 +1,7 @@
 // Custom imports
 use crate::filesystem::directories;
 use crate::generators::config;
+use crate::generators::controller;
 use crate::generators::project;
 use crate::generators::router;
 use crate::generators::utils;
@@ -11,8 +12,9 @@ pub fn generate_project(
     author_email: &str,
     path: &str,
 ) -> Result<(), std::io::Error> {
-    let routes: Vec<&str> = vec!["users", "products"];
-    let controllers: Vec<&str> = vec!["users", "products"];
+    let routes: Vec<&str> = vec!["user", "product"];
+    let controllers: Vec<&str> = vec!["user", "product"];
+    let models: Vec<&str> = vec!["user", "product"];
 
     match project::create_env_file(path) {
         Ok(()) => println!("Env file successfully created!"),
@@ -24,7 +26,7 @@ pub fn generate_project(
         Err(error) => return Err(error),
     };
 
-    match project::create_package_file(app_name, author_name, author_email, path) {
+    match project::create_package_file(path, app_name, author_name, author_email) {
         Ok(()) => println!("Package file successfully created!"),
         Err(error) => return Err(error),
     };
@@ -34,7 +36,7 @@ pub fn generate_project(
         Err(error) => return Err(error),
     }
 
-    match utils::create_utils_file(app_name, path) {
+    match utils::create_utils_file(path, app_name) {
         Ok(()) => println!("Utils file successfully created!"),
         Err(error) => return Err(error),
     };
@@ -54,7 +56,12 @@ pub fn generate_project(
         Err(error) => return Err(error),
     }
 
-    match router::create_routers_file(path, controllers) {
+    match controller::create_controllers_file(path, models) {
+        Ok(()) => println!("Controllers successfully created!"),
+        Err(error) => return Err(error),
+    }
+
+    match router::create_routers_files(path, controllers) {
         Ok(()) => println!("Routers successfully created!"),
         Err(error) => return Err(error),
     }

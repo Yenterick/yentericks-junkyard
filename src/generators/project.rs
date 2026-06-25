@@ -44,13 +44,13 @@ use crate::filesystem::files;
 /// ```
 /// ### Examples
 /// ```rust
-/// create_package_file("app_name", "author", "author@gmail.com", "./example-proyect");
+/// create_package_file("./example-project", "app_name", "author", "author@gmail.com");
 /// ```
 pub fn create_package_file(
+    path: &str,
     app_name: &str,
     author_name: &str,
     author_email: &str,
-    path: &str,
 ) -> Result<(), io::Error> {
     let package_template_path: &Path = Path::new("templates/express-sequelize/package.txt");
     let template_content: String = fs::read_to_string(package_template_path)?;
@@ -121,7 +121,7 @@ pub fn create_package_file(
 /// ```
 /// ### Examples
 /// ```rust
-/// create_tsconfig_file("./example-proyect");
+/// create_tsconfig_file("./example-project");
 /// ```
 pub fn create_tsconfig_file(path: &str) -> Result<(), io::Error> {
     let tsconfig_template_path: &Path = Path::new("templates/express-sequelize/tsconfig.txt");
@@ -145,7 +145,7 @@ pub fn create_tsconfig_file(path: &str) -> Result<(), io::Error> {
 /// ```
 /// ### Examples
 /// ```rust
-/// create_env_file("./example-proyect");
+/// create_env_file("./example-project");
 /// ```
 pub fn create_env_file(path: &str) -> Result<(), io::Error> {
     let env_template_path: &Path = Path::new("templates/express-sequelize/env.txt");
@@ -213,7 +213,7 @@ pub fn create_env_file(path: &str) -> Result<(), io::Error> {
 /// ```
 /// ### Examples
 /// ```rust
-/// create_app_file("./example-proyect", routers) /* routers: Vec<String> */
+/// create_app_file("./example-project", routers) /* routers: Vec<String> */
 /// ```
 pub fn create_app_file(path: &str, routers: Vec<&str>) -> Result<(), io::Error> {
     let app_template_content: &Path = Path::new("templates/express-sequelize/app.txt");
