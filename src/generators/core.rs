@@ -69,7 +69,7 @@ pub fn generate_project(
             name: "product".to_string(),
             fields: vec![
                 Field {
-                    name: "pruduct_id".to_string(),
+                    name: "product_id".to_string(),
                     data_type: DataType::Integer,
                     primary_key: true,
                     foreign_key: None,

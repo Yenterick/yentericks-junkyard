@@ -2,17 +2,17 @@ import { Router } from "express";
 
 // Module imports
 import {
-    select{{ controllerCapitalized }}s,
-    select{{ controllerCapitalized }}byId,
-    update{{ controllerCapitalized }},
-    delete{{ controllerCapitalized }},
+    select{{ capitalizedController }}s,
+    select{{ capitalizedController }}ById,
+    update{{ capitalizedController }},
+    delete{{ capitalizedController }},
 } from "../controllers/{{ controller }}Controller.ts";
 
 const router: Router = Router();
 
-router.get('/', select{{ controllerCapitalized }}s);
-router.get("/:id", select{{ controllerCapitalized }}byId);
-router.put("/:id", update{{ controllerCapitalized }});
-router.delete("/:id", delete{{ controllerCapitalized }});
+router.get('/', select{{ capitalizedController }}s);
+router.get("/:id", select{{ capitalizedController }}byId);
+router.put("/:id", update{{ capitalizedController }});
+router.delete("/:id", delete{{ capitalizedController }});
 
 export default router;

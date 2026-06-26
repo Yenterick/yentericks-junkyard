@@ -14,18 +14,18 @@ use crate::{filesystem::files, models::model::Model};
 ///
 /// Module imports
 /// import {
-///     select{{ controllerCapitalized }}s,
-///     select{{ controllerCapitalized }}byId,
-///     update{{ controllerCapitalized }},
-///     delete{{ controllerCapitalized }},
+///     select{{ capitalizedController }}s,
+///     select{{ capitalizedController }}byId,
+///     update{{ capitalizedController }},
+///     delete{{ capitalizedController }},
 /// } from "../controller/{{ controller }}.ts";
 ///
 /// const router: Router = Router();
 ///
-/// router.get('/', select{{ controllerCapitalized }}s);
-/// router.get("/:id", select{{ controllerCapitalized }}byId);
-/// router.put("/:id", update{{ controllerCapitalized }});
-/// router.delete("/:id", delete{{ controllerCapitalized }});
+/// router.get('/', select{{ capitalizedController }}s);
+/// router.get("/:id", select{{ capitalizedController }}byId);
+/// router.put("/:id", update{{ capitalizedController }});
+/// router.delete("/:id", delete{{ capitalizedController }});
 ///
 /// export default router;
 /// ```
@@ -42,7 +42,7 @@ pub fn create_routers_files(path: &str, models: &[Model]) -> Result<(), io::Erro
             files::find_placeholder(&template_content, "controller", &model.name);
         formatted_content = files::find_placeholder(
             &formatted_content,
-            "controllerCapitalized",
+            "capitalizedController",
             &model.name.capitalize(),
         );
 

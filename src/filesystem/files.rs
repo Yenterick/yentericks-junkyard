@@ -55,7 +55,7 @@ pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<&st
         let relative_loop_end: usize = result[header_end..].find(&endfor).unwrap();
         let loop_end = header_end + relative_loop_end;
 
-        let block = result[header_end + 2..loop_end].trim();
+        let block: &str = &result[header_end + 2..loop_end].to_string();
         let mut expanded: String = String::new();
 
         for (index, item) in replacement.iter().enumerate() {
