@@ -5,7 +5,7 @@ use std::{
 };
 
 // Custom imports
-use crate::filesystem::files;
+use crate::{filesystem::files, models::model::Model};
 
 /// Creates the controllers files on the desired path
 /// ### Created File
@@ -72,26 +72,29 @@ use crate::filesystem::files;
 ///         });
 ///     }
 /// }
-/// ``` 
+/// ```
 /// ### Examples
 /// ```rust
-/// create_controllers_file("./example-project", models) /* models: Vec<&str> */
+/// create_controllers_file("./example-project", models) /* models: &[Model] */
 /// ```
-pub fn create_controllers_file(path: &str, models: Vec<&str>) -> Result<(), io::Error> {
+pub fn create_controllers_file(path: &str, models: &[Model]) -> Result<(), io::Error> {
     let controller_template_path: &Path = Path::new("templates/express-sequelize/controller.txt");
     let template_content: String = fs::read_to_string(controller_template_path)?;
 
-    /* TODO: Implement updateModel */ 
+    /* TODO: Implement updateModel */
     for model in models {
         let mut formatted_content: String =
-            files::find_placeholder(&template_content, "model", model);
-        formatted_content =
-            files::find_placeholder(&formatted_content, "modelCapitalized", &model.capitalize());
+            files::find_placeholder(&template_content, "model", &model.name);
+        formatted_content = files::find_placeholder(
+            &formatted_content,
+            "modelCapitalized",
+            &model.name.capitalize(),
+        );
 
         let file_path: PathBuf = PathBuf::from(path)
             .join("server")
             .join("controllers")
-            .join(format!("{}.ts", model));
+            .join(format!("{}Controller.ts", &model.name));
         files::create_file(&formatted_content, file_path)?;
     }
 

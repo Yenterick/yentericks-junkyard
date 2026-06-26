@@ -4,7 +4,7 @@ import cors from "cors";
 
 // Router imports
 {{ for router in routers }}
-import {{ router }}Router from "./routes/{{ router }}.js";
+import {{ router }}Router from "./routes/{{ router }}Router.js";
 {{ endfor routers }}
 
 // Types import

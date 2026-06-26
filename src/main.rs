@@ -6,6 +6,7 @@ use crate::generators::core;
 // Module config
 mod filesystem;
 mod generators;
+mod models;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

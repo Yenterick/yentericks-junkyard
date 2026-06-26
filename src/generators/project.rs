@@ -4,7 +4,7 @@ use std::{
 };
 
 // Custom imports
-use crate::filesystem::files;
+use crate::{filesystem::files, models::model::Model};
 
 /// Creates the package.json file on the desired path.
 /// ### Created File
@@ -213,13 +213,20 @@ pub fn create_env_file(path: &str) -> Result<(), io::Error> {
 /// ```
 /// ### Examples
 /// ```rust
-/// create_app_file("./example-project", routers) /* routers: Vec<String> */
+/// create_app_file("./example-project", "app_name", models) /* models: &[Model] */
 /// ```
-pub fn create_app_file(path: &str, routers: Vec<&str>) -> Result<(), io::Error> {
+pub fn create_app_file(path: &str, app_name: &str, models: &[Model]) -> Result<(), io::Error> {
     let app_template_content: &Path = Path::new("templates/express-sequelize/app.txt");
     let template_content: String = fs::read_to_string(app_template_content)?;
-    let formatted_text: String =
-        files::find_loop_placeholder(&template_content, "routers", routers);
+    let mut formatted_text: String = files::find_loop_placeholder(
+        &template_content,
+        "routers",
+        models
+            .iter()
+            .map(|model: &Model| model.name.as_str())
+            .collect(),
+    );
+    formatted_text = files::find_placeholder(&formatted_text, "app_name", app_name);
 
     let file_path: PathBuf = PathBuf::from(path).join("server").join("app.ts");
 

@@ -6,7 +6,7 @@ import {
     select{{ controllerCapitalized }}byId,
     update{{ controllerCapitalized }},
     delete{{ controllerCapitalized }},
-} from "../controllers/{{ controller }}.ts";
+} from "../controllers/{{ controller }}Controller.ts";
 
 const router: Router = Router();
 
