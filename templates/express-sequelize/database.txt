@@ -1,12 +1,10 @@
-import { Sequelize } from '@sequelize/core';
-import { PostgresDialect } from '@sequelize/postgres';
+import { Sequelize } from "sequelize";
 
 // Modules import
 import { log, sleep } from '../utils/utils.js';
 
 // Creating the PostgreSQL sequelize object
 export const sequelize = new Sequelize({
-    dialect: PostgresDialect,
     database: process.env.POSTGRES_DB || "",
     user: process.env.POSTGRES_USER || "",
     password: process.env.POSTGRES_PASSWORD || "",

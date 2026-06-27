@@ -1,10 +1,10 @@
 use std::{
-    fs, io,
+    io,
     path::{Path, PathBuf},
 };
 
 // Custom imports
-use crate::filesystem::files;
+use crate::filesystem::files::{self, read_template};
 
 /// Creates the database config file on the desired path.
 /// ### Created File
@@ -49,7 +49,7 @@ use crate::filesystem::files;
 /// create_database_file("./example-proyect");
 pub fn create_database_file(path: &str) -> Result<(), io::Error> {
     let database_template_path: &Path = Path::new("templates/express-sequelize/database.txt");
-    let template_content: String = fs::read_to_string(database_template_path)?;
+    let template_content: String = read_template(database_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path)
         .join("server")
@@ -79,7 +79,7 @@ pub fn create_database_file(path: &str) -> Result<(), io::Error> {
 /// create_dotenv_file("./example-proyect");
 pub fn create_dotenv_file(path: &str) -> Result<(), io::Error> {
     let database_template_path: &Path = Path::new("templates/express-sequelize/dotenv.txt");
-    let template_content: String = fs::read_to_string(database_template_path)?;
+    let template_content: String = read_template(database_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path)
         .join("server")

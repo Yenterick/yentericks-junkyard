@@ -1,16 +1,16 @@
 use capitalize::Capitalize;
 use std::{
-    fs, io,
+    io,
     path::{Path, PathBuf},
 };
 
 // Custom imports
 use crate::{
-    filesystem::files,
+    filesystem::files::{self, read_template},
     models::model::{Field, Model},
 };
 
-/// Creates the controllers files on the desired path
+/// Creates the controllers files on the desired path.
 /// ### Created File
 /// ```typescript
 /// // Module imports
@@ -55,7 +55,7 @@ use crate::{
 ///         });
 ///     }
 /// };
-/// 
+///
 /// export const update{{ capitalizedModel }} = async (
 ///     req: Request,
 ///     res: Response
@@ -114,9 +114,8 @@ use crate::{
 /// ```
 pub fn create_controllers_file(path: &str, models: &[Model]) -> Result<(), io::Error> {
     let controller_template_path: &Path = Path::new("templates/express-sequelize/controller.txt");
-    let template_content: String = fs::read_to_string(controller_template_path)?;
+    let template_content: String = read_template(controller_template_path)?;
 
-    /* TODO: Implement updateModel */
     for model in models {
         let mut formatted_content: String =
             files::find_placeholder(&template_content, "model", &model.name);

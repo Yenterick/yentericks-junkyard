@@ -1,10 +1,13 @@
 use std::{
-    fs, io,
+    io,
     path::{Path, PathBuf},
 };
 
 // Custom imports
-use crate::{filesystem::files, models::model::Model};
+use crate::{
+    filesystem::files::{self, read_template},
+    models::model::Model,
+};
 
 /// Creates the package.json file on the desired path.
 /// ### Created File
@@ -53,7 +56,7 @@ pub fn create_package_file(
     author_email: &str,
 ) -> Result<(), io::Error> {
     let package_template_path: &Path = Path::new("templates/express-sequelize/package.txt");
-    let template_content: String = fs::read_to_string(package_template_path)?;
+    let template_content: String = read_template(package_template_path)?;
     let mut formatted_content: String =
         files::find_placeholder(&template_content, "app_name", app_name);
     formatted_content = files::find_placeholder(&formatted_content, "author_name", author_name);
@@ -125,7 +128,7 @@ pub fn create_package_file(
 /// ```
 pub fn create_tsconfig_file(path: &str) -> Result<(), io::Error> {
     let tsconfig_template_path: &Path = Path::new("templates/express-sequelize/tsconfig.txt");
-    let template_content: String = fs::read_to_string(tsconfig_template_path)?;
+    let template_content: String = read_template(tsconfig_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path).join("server").join("tsconfig.json");
 
@@ -149,7 +152,7 @@ pub fn create_tsconfig_file(path: &str) -> Result<(), io::Error> {
 /// ```
 pub fn create_env_file(path: &str) -> Result<(), io::Error> {
     let env_template_path: &Path = Path::new("templates/express-sequelize/env.txt");
-    let template_content: String = fs::read_to_string(env_template_path)?;
+    let template_content: String = read_template(env_template_path)?;
 
     let file_path: PathBuf = PathBuf::from(path).join(".env");
 
@@ -213,11 +216,11 @@ pub fn create_env_file(path: &str) -> Result<(), io::Error> {
 /// ```
 /// ### Examples
 /// ```rust
-/// create_app_file("./example-project", "app_name", models) /* models: &[Model] */
+/// create_app_file("./example-project", "app_name", models); /* models: &[Model] */
 /// ```
 pub fn create_app_file(path: &str, app_name: &str, models: &[Model]) -> Result<(), io::Error> {
     let app_template_content: &Path = Path::new("templates/express-sequelize/app.txt");
-    let template_content: String = fs::read_to_string(app_template_content)?;
+    let template_content: String = read_template(app_template_content)?;
     let mut formatted_text: String = files::find_loop_placeholder(
         &template_content,
         "routers",

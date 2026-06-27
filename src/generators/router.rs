@@ -1,13 +1,16 @@
 use capitalize::Capitalize;
 use std::{
-    fs, io,
+    io,
     path::{Path, PathBuf},
 };
 
 // Custom imports
-use crate::{filesystem::files, models::model::Model};
+use crate::{
+    filesystem::files::{self, read_template},
+    models::model::Model,
+};
 
-/// Creates the routers files on the desired path
+/// Creates the routers files on the desired path.
 /// ### Created File
 /// ```typescript
 /// import { Router } from "express";
@@ -35,7 +38,7 @@ use crate::{filesystem::files, models::model::Model};
 /// ```
 pub fn create_routers_files(path: &str, models: &[Model]) -> Result<(), io::Error> {
     let router_template_path: &Path = Path::new("templates/express-sequelize/router.txt");
-    let template_content: String = fs::read_to_string(router_template_path)?;
+    let template_content: String = read_template(router_template_path)?;
 
     for model in models {
         let mut formatted_content: String =

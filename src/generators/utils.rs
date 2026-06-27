@@ -1,10 +1,10 @@
 use std::{
-    fs, io,
+    io,
     path::{Path, PathBuf},
 };
 
 // Custom imports
-use crate::filesystem::files;
+use crate::filesystem::files::{self, read_template};
 
 /// Creates the utils file on the desired path.
 /// ### Created File
@@ -32,7 +32,7 @@ use crate::filesystem::files;
 /// ```
 pub fn create_utils_file(path: &str, app_name: &str) -> Result<(), io::Error> {
     let utils_template_path: &Path = Path::new("templates/express-sequelize/utils.txt");
-    let template_content: String = fs::read_to_string(utils_template_path)?;
+    let template_content: String = read_template(utils_template_path)?;
     let formatted_content: String =
         files::find_placeholder(&template_content, "app_name", app_name);
 

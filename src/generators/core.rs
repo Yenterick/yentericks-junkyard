@@ -1,10 +1,6 @@
 // Custom imports
 use crate::filesystem::directories;
-use crate::generators::config;
-use crate::generators::controller;
-use crate::generators::project;
-use crate::generators::router;
-use crate::generators::utils;
+use crate::generators::{config, controller, model, project, router, utils};
 
 use crate::models::model::*;
 
@@ -20,8 +16,9 @@ pub fn generate_project(
             fields: vec![
                 Field {
                     name: "user_id".to_string(),
-                    data_type: DataType::Integer,
+                    data_type: DataType::PrimaryKey,
                     primary_key: true,
+                    auto_increment: true,
                     foreign_key: None,
                     unique: true,
                     allow_null: false,
@@ -31,6 +28,7 @@ pub fn generate_project(
                     name: "username".to_string(),
                     data_type: DataType::String,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: true,
                     allow_null: false,
@@ -40,6 +38,7 @@ pub fn generate_project(
                     name: "email".to_string(),
                     data_type: DataType::String,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: true,
                     allow_null: false,
@@ -49,6 +48,7 @@ pub fn generate_project(
                     name: "is_admin".to_string(),
                     data_type: DataType::Boolean,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: false,
                     allow_null: false,
@@ -56,8 +56,9 @@ pub fn generate_project(
                 },
                 Field {
                     name: "created_at".to_string(),
-                    data_type: DataType::DateTime,
+                    data_type: DataType::CurrentDate,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: false,
                     allow_null: false,
@@ -70,8 +71,9 @@ pub fn generate_project(
             fields: vec![
                 Field {
                     name: "product_id".to_string(),
-                    data_type: DataType::Integer,
+                    data_type: DataType::PrimaryKey,
                     primary_key: true,
+                    auto_increment: true,
                     foreign_key: None,
                     unique: true,
                     allow_null: false,
@@ -81,6 +83,7 @@ pub fn generate_project(
                     name: "name".to_string(),
                     data_type: DataType::String,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: false,
                     allow_null: false,
@@ -90,6 +93,7 @@ pub fn generate_project(
                     name: "price".to_string(),
                     data_type: DataType::Float,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: false,
                     allow_null: false,
@@ -99,6 +103,7 @@ pub fn generate_project(
                     name: "stock".to_string(),
                     data_type: DataType::Integer,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: false,
                     allow_null: false,
@@ -106,8 +111,9 @@ pub fn generate_project(
                 },
                 Field {
                     name: "created_at".to_string(),
-                    data_type: DataType::DateTime,
+                    data_type: DataType::CurrentDate,
                     primary_key: false,
+                    auto_increment: false,
                     foreign_key: None,
                     unique: false,
                     allow_null: false,
@@ -154,6 +160,11 @@ pub fn generate_project(
 
     match project::create_app_file(path, app_name, &models) {
         Ok(()) => println!("App config file successfully created!"),
+        Err(error) => return Err(error),
+    }
+
+    match model::create_models_file(path, &models) {
+        Ok(()) => println!("Models successfully created!"),
         Err(error) => return Err(error),
     }
 

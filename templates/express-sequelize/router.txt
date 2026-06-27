@@ -4,14 +4,16 @@ import { Router } from "express";
 import {
     select{{ capitalizedController }}s,
     select{{ capitalizedController }}ById,
+    insert{{ capitalizedController }},
     update{{ capitalizedController }},
     delete{{ capitalizedController }},
-} from "../controllers/{{ controller }}Controller.ts";
+} from "../controllers/{{ controller }}Controller.js";
 
 const router: Router = Router();
 
 router.get('/', select{{ capitalizedController }}s);
-router.get("/:id", select{{ capitalizedController }}byId);
+router.get("/:id", select{{ capitalizedController }}ById);
+router.post('/', insert{{ capitalizedController }});
 router.put("/:id", update{{ capitalizedController }});
 router.delete("/:id", delete{{ capitalizedController }});
 

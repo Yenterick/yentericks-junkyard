@@ -1,0 +1,71 @@
+import {
+    DataTypes,
+    Model,
+    type InferAttributes,
+    type InferCreationAttributes,
+    type CreationOptional,
+} from "sequelize";
+
+// Module imports
+import { sequelize } from "../config/database.js";
+
+// Defines the {{ model }} model
+export class {{ capitalizedModel }} extends Model<
+    InferAttributes<{{ capitalizedModel }}>,
+    InferCreationAttributes<{{ capitalizedModel }}>
+> {
+{{ for field in fields }}
+    declare {{ field.name }}: {{ field.ts_data_type }};
+{{ endfor fields }}
+}
+
+{{ capitalizedModel }}.init(
+    {
+{{ for field in fields }}
+        {{ field.name }}: {
+            type: DataTypes.{{ field.sq_data_type }},
+            primaryKey: {{ field.primary_key }},
+            autoIncrement: {{ field.auto_increment }},
+            allowNull: {{ field.allow_null }},
+            unique: {{ field.unique }},
+            defaultValue: {{ field.default }}
+        },
+{{ endfor fields }}
+    },
+    {
+        sequelize,
+        tableName: "{{ model }}",
+        timestamps: false,
+    }
+);
+
+// {{ capitalizedModel }} model with all the required functions
+export const {{ model }}Model = { 
+    select{{ capitalizedModel }}s: async (): Promise<{{ capitalizedModel }}[]> => {
+        return await {{ capitalizedModel }}.findAll();
+    },
+
+    select{{ capitalizedModel }}ById: async ({{ model }}_id: number): Promise<{{ capitalizedModel }} | null> => {
+        return await {{ capitalizedModel }}.findByPk({{ model }}_id);
+    },
+
+    insert{{ capitalizedModel }}: async (data: any): Promise<void> => {
+        await {{ capitalizedModel }}.create(data);
+    },
+
+    update{{ capitalizedModel }}ById: async ({{ model }}_id: number, data: any): Promise<void> => {
+        await {{ capitalizedModel }}.update(data, {
+            where: {
+                {{ model }}_id,
+            },
+        });
+    },
+
+    delete{{ capitalizedModel }}: async ({{ model }}_id: number): Promise<void> => {
+        await {{ capitalizedModel }}.destroy({
+            where: {
+                {{ model }}_id,
+            },
+        });
+    },
+}
