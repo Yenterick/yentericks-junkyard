@@ -1,26 +1,25 @@
+use color_eyre::eyre::{Ok, Result};
 use std::env;
 
 // Custom imports
-use crate::generators::core;
+use crate::view::app;
 
 // Module config
 mod filesystem;
 mod generators;
 mod models;
+mod view;
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
+fn main() -> Result<()> {
+    color_eyre::install()?;
 
-    let name: &String = &args[1];
-    let path: &String = &args[2];
-    let author: &str = "Yenterick";
-    let author_email = "yenterick@gmail.com";
+    // Getting the path arg
+    let app_path: Option<String> = env::args().nth(1);
 
-    println!("Creating the package {name}...");
-    println!("Working on directory {path}");
+    // Creating the ratatui terminal
+    let terminal = ratatui::init();
+    let result = app::run(terminal, &app_path.unwrap_or(String::from(".")));
+    ratatui::restore();
 
-    match core::generate_project(name, author, author_email, path) {
-        Ok(()) => println!("The project was successfully created!"),
-        Err(error) => println!("There was an error creating the project... {error}"),
-    };
+    result
 }

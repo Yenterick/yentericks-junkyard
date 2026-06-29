@@ -14,7 +14,12 @@ keywords = ["tui", "backend", "scaffold"]
 capitalize = "0.3.4"
 color-eyre = "0.6.5"
 crossterm = "0.29.0"
-ratatui = "0.30.1"
+ratatui = { version = "0.30.1", features = ["all-widgets"] } 
 
 [profile.release]
 panic = 'abort'
+
+[keymap]
+"Ctrl-d" = "Quit"
+"Ctrl-c" = "Quit"
+"Ctrl-z" = "Suspend"
