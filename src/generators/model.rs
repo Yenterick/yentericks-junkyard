@@ -148,24 +148,33 @@ pub fn create_index_file(path: &str, models: &[Model]) -> Result<(), io::Error> 
     let index_template_path: &Path = Path::new("templates/express-sequelize/index.txt");
     let template_content: String = files::read_template(index_template_path)?;
 
-    let mut formatted_content: String = files::find_loop_placeholder(
-        &template_content,
-        "models",
-        models
-            .iter()
-            .map(|model: &Model| model.name.as_str())
-            .collect(),
-    );
+    let imports: Vec<String> = models
+        .iter()
+        .map(|m: &Model| {
+            format!(
+                "import {{ {} }} from \"./{}Model.js\";",
+                m.name.capitalize(),
+                m.name
+            )
+        })
+        .collect();
 
-    let capitalized_models: Vec<String> =
-        models.iter().map(|model| model.name.capitalize()).collect();
+    let imports: String = imports.join("\n");
+
+    let mut formatted_content: String =
+        find_placeholder(&template_content, "modelImports", &imports);
+
+    let capitalized_models: Vec<String> = models
+        .iter()
+        .map(|model: &Model| model.name.capitalize())
+        .collect();
 
     formatted_content = files::find_loop_placeholder(
         &formatted_content,
         "capitalizedModels",
         capitalized_models
             .iter()
-            .map(|name| name.as_str())
+            .map(|name: &String| name.as_str())
             .collect(),
     );
 

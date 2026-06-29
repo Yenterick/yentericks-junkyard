@@ -1,6 +1,4 @@
-{{ for model in models }}
-import { {{ model }} } from "./{{ model }}Model.js";
-{{ endfor models }}
+{{ modelImports }}
 
 {{ for relationship in relationships }}
 {{ relationship.parent }}.hasMany({{ relationship.child }}, {

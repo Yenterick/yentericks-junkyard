@@ -8,7 +8,7 @@ import {{ router }}Router from "./routes/{{ router }}Router.js";
 {{ endfor routers }}
 
 // Types import
-import type { Application, Request, Response } from "Express";
+import type { Application, Request, Response } from "express";
 
 // Module imports
 import { log } from "./utils/utils.js";
@@ -20,7 +20,7 @@ import "./models/index.js"
 const app: Application = express();
 
 // App configuration
-const PORT = process.env.PORT;
+const PORT = 3000;
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
