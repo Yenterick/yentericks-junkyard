@@ -1,5 +1,8 @@
 #![allow(unused)]
 
+use capitalize::Capitalize;
+
+// Custom imports
 use crate::filesystem::files;
 
 #[derive(Debug, Clone)]
@@ -18,6 +21,13 @@ pub struct Field {
     pub unique: bool,
     pub allow_null: bool,
     pub default: Option<DefaultValue>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Relationship {
+    pub parent: String,
+    pub child: String,
+    pub foreign_key: String,
 }
 
 #[derive(Debug, Clone)]
@@ -128,6 +138,32 @@ impl Field {
         };
 
         formatted_content = files::find_placeholder(&formatted_content, "field.default", &default);
+
+        formatted_content
+    }
+}
+
+impl Relationship {
+    pub fn render(&self, template: &str) -> String {
+        let template_content: String = template.to_string();
+
+        let mut formatted_content: String = files::find_placeholder(
+            &template_content,
+            "relationship.parent",
+            &self.parent.capitalize(),
+        );
+
+        formatted_content = files::find_placeholder(
+            &formatted_content,
+            "relationship.child",
+            &self.child.capitalize(),
+        );
+
+        formatted_content = files::find_placeholder(
+            &formatted_content,
+            "relationship.foreign_key",
+            &self.foreign_key,
+        );
 
         formatted_content
     }

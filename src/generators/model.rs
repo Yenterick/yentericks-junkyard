@@ -7,7 +7,7 @@ use std::{
 // Custom imports
 use crate::{
     filesystem::files::{self, find_placeholder, read_template},
-    models::model::Model,
+    models::model::*,
 };
 
 /// Creates the models files on the desired path.
@@ -113,6 +113,84 @@ pub fn create_models_file(path: &str, models: &[Model]) -> Result<(), io::Error>
 
         files::create_file(&formatted_content, file_path)?;
     }
+
+    Ok(())
+}
+
+/// Creates the index file in the desired path
+/// ### Created File
+/// ```typescript
+/// {{ for model in models }}
+/// import { {{ model }}Model } from "{{ model }}Model.js";
+/// {{ endfor models }}
+///
+/// {{ for relationship in relationships }}
+/// {{ relationship.parent }}.hasMany({{ relationship.child }}, {
+///     foreignKey: "{{ relationship.foreign_key }}",
+/// });
+///
+/// {{ relationship.child }}.belongsTo({{ relationship.parent }}, {
+///     foreignKey: "{{ relationship.foreign_key }}",
+/// });
+/// {{ endfor relationships }}
+///
+/// export {
+/// {{ for model in models }}
+///     {{ model }},
+/// {{  endfor models }}}
+/// };
+/// ```
+/// ### Examples
+/// ```rust
+/// create_index_file("./example-project", models); /* models: &[Model] */
+/// ```
+pub fn create_index_file(path: &str, models: &[Model]) -> Result<(), io::Error> {
+    let index_template_path: &Path = Path::new("templates/express-sequelize/index.txt");
+    let template_content: String = files::read_template(index_template_path)?;
+
+    let mut formatted_content: String = files::find_loop_placeholder(
+        &template_content,
+        "models",
+        models
+            .iter()
+            .map(|model: &Model| model.name.as_str())
+            .collect(),
+    );
+
+    let capitalized_models: Vec<String> =
+        models.iter().map(|model| model.name.capitalize()).collect();
+
+    formatted_content = files::find_loop_placeholder(
+        &formatted_content,
+        "capitalizedModels",
+        capitalized_models
+            .iter()
+            .map(|name| name.as_str())
+            .collect(),
+    );
+
+    let mut relationships = Vec::new();
+
+    for model in models {
+        for field in &model.fields {
+            if let Some(foreign_key) = &field.foreign_key {
+                relationships.push(Relationship {
+                    parent: model.name.clone(),
+                    child: foreign_key.model.clone(),
+                    foreign_key: foreign_key.field.clone(),
+                });
+            }
+        }
+    }
+
+    formatted_content =
+        files::find_relationship_loop_placeholder(&formatted_content, &relationships);
+
+    let file_path = PathBuf::from(path)
+        .join("server")
+        .join("models")
+        .join("index.ts");
+    files::create_file(&formatted_content, file_path)?;
 
     Ok(())
 }

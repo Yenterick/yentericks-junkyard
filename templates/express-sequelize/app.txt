@@ -15,7 +15,7 @@ import { log } from "./utils/utils.js";
 import { dbConnection } from "./config/database.js";
 
 // Setup database associations
-import "./models/associations.js"
+import "./models/index.js"
 
 const app: Application = express();
 

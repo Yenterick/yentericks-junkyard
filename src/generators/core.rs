@@ -10,7 +10,7 @@ pub fn generate_project(
     author_email: &str,
     path: &str,
 ) -> Result<(), std::io::Error> {
-    let models = vec![
+    let models: Vec<Model> = vec![
         Model {
             name: "user".to_string(),
             fields: vec![
@@ -76,6 +76,19 @@ pub fn generate_project(
                     auto_increment: true,
                     foreign_key: None,
                     unique: true,
+                    allow_null: false,
+                    default: None,
+                },
+                Field {
+                    name: "user_id".to_string(),
+                    data_type: DataType::Integer,
+                    primary_key: false,
+                    auto_increment: false,
+                    foreign_key: Some(ForeignKey {
+                        model: "user".to_string(),
+                        field: "user_id".to_string(),
+                    }),
+                    unique: false,
                     allow_null: false,
                     default: None,
                 },
@@ -164,17 +177,22 @@ pub fn generate_project(
     }
 
     match model::create_models_file(path, &models) {
-        Ok(()) => println!("Models successfully created!"),
+        Ok(()) => println!("Models files successfully created!"),
+        Err(error) => return Err(error),
+    }
+
+    match model::create_index_file(path, &models) {
+        Ok(()) => println!("Index file successfully created!"),
         Err(error) => return Err(error),
     }
 
     match controller::create_controllers_file(path, &models) {
-        Ok(()) => println!("Controllers successfully created!"),
+        Ok(()) => println!("Controllers files successfully created!"),
         Err(error) => return Err(error),
     }
 
     match router::create_routers_files(path, &models) {
-        Ok(()) => println!("Routers successfully created!"),
+        Ok(()) => println!("Routers files successfully created!"),
         Err(error) => return Err(error),
     }
 

@@ -1,0 +1,19 @@
+{{ for model in models }}
+import { {{ model }} } from "./{{ model }}Model.js";
+{{ endfor models }}
+
+{{ for relationship in relationships }}
+{{ relationship.parent }}.hasMany({{ relationship.child }}, {
+    foreignKey: "{{ relationship.foreign_key }}",
+});
+
+{{ relationship.child }}.belongsTo({{ relationship.parent }}, {
+    foreignKey: "{{ relationship.foreign_key }}",
+});
+{{ endfor relationships }}
+
+export {
+{{ for capitalizedModel in capitalizedModels }}
+    {{ capitalizedModel }},
+{{ endfor capitalizedModels }}
+};

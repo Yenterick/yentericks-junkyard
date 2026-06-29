@@ -5,7 +5,8 @@ use std::{
     str,
 };
 
-use crate::models::model::Field;
+// Custom imports
+use crate::models::model::{Field, Relationship};
 
 /// Creates a new file by receiving the desired content and the file path.
 /// ### Examples
@@ -33,10 +34,10 @@ pub fn find_placeholder(text: &str, placeholder: &str, replacement: &str) -> Str
     text.replace(&format!("{{{{ {} }}}}", placeholder), replacement)
 }
 
-/// Finds the patterns for a loop on an already readen file and changes it to the replacement.
+/// Prepares the loop placeholder output so it doesn't come out with a lot of line jumps
 /// ### Examples
 /// ```rust
-/// find_loop_placeholder(&template_content, "routers", routers) /* routers: Vec<String> */
+/// normalize_loop_output(rendered);
 /// ```
 fn normalize_loop_output(rendered: String) -> String {
     rendered
@@ -47,10 +48,17 @@ fn normalize_loop_output(rendered: String) -> String {
         .join("\n")
 }
 
+/// Finds the patterns for a loop on an already readen file and changes it to the replacement.
+/// ### Examples
+/// ```rust
+/// find_loop_placeholder(&template_content, "routers", routers) /* routers: Vec<String> */
+/// ```
 pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<&str>) -> String {
     let mut result: String = text.to_string();
+    let mut search_start: usize = 0;
 
-    while let Some(for_start) = result.find("{{ for ") {
+    while let Some(relative_for_start) = result[search_start..].find("{{ for ") {
+        let for_start = search_start + relative_for_start;
         let relative_header_end: usize = result[for_start..].find("}}").unwrap();
         let header_end: usize = for_start + relative_header_end;
         let header: &str = &result[for_start..header_end];
@@ -62,14 +70,18 @@ pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<&st
         parts.next().unwrap(); // skips "in"
         let collection = parts.next().unwrap();
 
-        if collection != loop_target {
-            break;
-        }
-
         let endfor = format!("{{{{ endfor {} }}}}", collection);
 
-        let relative_loop_end: usize = result[header_end..].find(&endfor).unwrap();
+        let Some(relative_loop_end) = result[header_end..].find(&endfor) else {
+            return result;
+        };
         let loop_end = header_end + relative_loop_end;
+        let full_block_end: usize = loop_end + endfor.len();
+
+        if collection != loop_target {
+            search_start = full_block_end;
+            continue;
+        }
 
         let block: &str = &result[header_end + 2..loop_end].to_string();
         let mut expanded: String = String::new();
@@ -85,18 +97,24 @@ pub fn find_loop_placeholder(text: &str, loop_target: &str, replacement: Vec<&st
             }
         }
 
-        let full_block_end: usize = loop_end + endfor.len();
-
         result.replace_range(for_start..full_block_end, &expanded);
     }
 
     result
 }
 
+/// Finds the patterns for a loop especifically for the list of fields on an already readen
+/// file and changes it to the replacement.
+/// ### Examples
+/// ```rust
+/// find_field_loop_placeholder(&template_content, fields) /* fields: &[Field] */
+/// ```
 pub fn find_field_loop_placeholder(text: &str, replacement: &[Field]) -> String {
     let mut result: String = text.to_string();
+    let mut search_start: usize = 0;
 
-    while let Some(for_start) = result.find("{{ for ") {
+    while let Some(relative_for_start) = result[search_start..].find("{{ for ") {
+        let for_start = search_start + relative_for_start;
         let relative_header_end: usize = result[for_start..].find("}}").unwrap();
         let header_end: usize = for_start + relative_header_end;
         let header: &str = &result[for_start..header_end];
@@ -108,14 +126,18 @@ pub fn find_field_loop_placeholder(text: &str, replacement: &[Field]) -> String 
         parts.next().unwrap(); // skips "in"
         let collection = parts.next().unwrap();
 
-        if collection != "fields" {
-            break;
-        }
-
         let endfor = format!("{{{{ endfor {} }}}}", collection);
 
-        let relative_loop_end: usize = result[header_end..].find(&endfor).unwrap();
+        let Some(relative_loop_end) = result[header_end..].find(&endfor) else {
+            return result;
+        };
         let loop_end = header_end + relative_loop_end;
+        let full_block_end: usize = loop_end + endfor.len();
+
+        if collection != "fields" {
+            search_start = full_block_end;
+            continue;
+        }
 
         let block: &str = &result[header_end + 2..loop_end].to_string();
         let mut expanded: String = String::new();
@@ -131,7 +153,61 @@ pub fn find_field_loop_placeholder(text: &str, replacement: &[Field]) -> String 
             }
         }
 
+        result.replace_range(for_start..full_block_end, &expanded);
+    }
+
+    result
+}
+
+/// Finds the patterns for a loop especifically for the list of relationships on an already readen
+/// file and changes it to the replacement.
+/// ### Examples
+/// ```rust
+/// find_relationship_loop_placeholder(&template_content, relationships) /* relationships: &[Relationship] */
+/// ```
+pub fn find_relationship_loop_placeholder(text: &str, replacement: &[Relationship]) -> String {
+    let mut result: String = text.to_string();
+    let mut search_start: usize = 0;
+
+    while let Some(relative_for_start) = result[search_start..].find("{{ for ") {
+        let for_start = search_start + relative_for_start;
+        let relative_header_end: usize = result[for_start..].find("}}").unwrap();
+        let header_end: usize = for_start + relative_header_end;
+        let header: &str = &result[for_start..header_end];
+
+        let content = header.strip_prefix("{{ for ").unwrap();
+        let mut parts: str::SplitWhitespace<'_> = content.split_whitespace();
+
+        parts.next().unwrap();
+        parts.next().unwrap(); // skips "in"
+        let collection = parts.next().unwrap();
+
+        let endfor = format!("{{{{ endfor {} }}}}", collection);
+
+        let Some(relative_loop_end) = result[header_end..].find(&endfor) else {
+            return result;
+        };
+        let loop_end = header_end + relative_loop_end;
         let full_block_end: usize = loop_end + endfor.len();
+
+        if collection != "relationships" {
+            search_start = full_block_end;
+            continue;
+        }
+
+        let block: &str = &result[header_end + 2..loop_end].to_string();
+        let mut expanded: String = String::new();
+
+        for (index, relationship) in replacement.iter().enumerate() {
+            let rendered = relationship.render(block);
+            let rendered = normalize_loop_output(rendered);
+
+            expanded.push_str(&rendered);
+
+            if index < replacement.len() - 1 {
+                expanded.push('\n');
+            }
+        }
 
         result.replace_range(for_start..full_block_end, &expanded);
     }
