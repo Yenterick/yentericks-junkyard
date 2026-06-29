@@ -2,7 +2,6 @@ import { Sequelize } from "sequelize";
 
 // Modules import
 import { log, sleep } from '../utils/utils.js';
-import "../models/index.js";
 
 // Creating the PostgreSQL sequelize object
 export const sequelize = new Sequelize({
