@@ -4,6 +4,7 @@ use std::{
 };
 
 use color_eyre::eyre::{Ok, Result};
+use crossterm::event::{KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     crossterm::event::{self, Event},
@@ -16,30 +17,34 @@ use ratatui::{
 
 #[derive(Debug, Default)]
 struct AppState {
-    templates: [TemplateSet; 2],
+    templates: Vec<TemplateSet>,
     list_state: ListState,
+    selected_template: Option<TemplateSet>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 struct TemplateSet {
     name: String,
 }
 
 // Custom imports
-use crate::view::color_scheme::ColorScheme;
+use crate::view::{
+    color_scheme::ColorScheme,
+    screen_action::{self, ScreenAction},
+};
 
 pub fn run(mut terminal: DefaultTerminal, path: &str) -> Result<()> {
     let template_set: TemplateSet = TemplateSet {
         name: String::from("Express - Sequelize"),
     };
 
-    let template_set_2: TemplateSet = TemplateSet {
-        name: String::from("Second Item Example"),
-    };
+    let mut list_state = ListState::default();
+    list_state.select(Some(0));
 
     let mut state: AppState = AppState {
-        templates: [template_set, template_set_2],
-        list_state: ListState::default(),
+        templates: vec![template_set],
+        list_state,
+        selected_template: None,
     };
 
     loop {
@@ -48,20 +53,61 @@ pub fn run(mut terminal: DefaultTerminal, path: &str) -> Result<()> {
 
         // Input handling
         if let Event::Key(key) = event::read()? {
-            match key.code {
-                event::KeyCode::Esc => {
-                    break;
-                }
-                event::KeyCode::Char(char) => match char {
-                    'k' => state.list_state.select_previous(),
-                    'j' => state.list_state.select_next(),
+            if key.kind != KeyEventKind::Press {
+                continue;
+            }
+
+            if state.selected_template.is_some() {
+                match handle_add_models(key) {
+                    ScreenAction::Back => {
+                        state.selected_template = None;
+                    }
+
+                    ScreenAction::None => {}
                     _ => {}
-                },
-                _ => {}
+                }
+            } else {
+                match handle_key(key, &mut state) {
+                    ScreenAction::Exit => break,
+                    ScreenAction::None => {}
+                    _ => {}
+                }
             }
         }
     }
     Ok(())
+}
+
+fn handle_key(key: KeyEvent, state: &mut AppState) -> ScreenAction {
+    match key.code {
+        event::KeyCode::Esc => ScreenAction::Exit,
+
+        event::KeyCode::Enter => {
+            if let Some(index) = state.list_state.selected() {
+                state.selected_template = Some(state.templates[index].clone());
+            }
+            ScreenAction::None
+        }
+
+        event::KeyCode::Char('k') => {
+            state.list_state.select_previous();
+            ScreenAction::None
+        }
+
+        event::KeyCode::Char('j') => {
+            state.list_state.select_next();
+            ScreenAction::None
+        }
+
+        _ => ScreenAction::None,
+    }
+}
+
+fn handle_add_models(key: KeyEvent) -> ScreenAction {
+    match key.code {
+        event::KeyCode::Esc => ScreenAction::Back,
+        _ => ScreenAction::None,
+    }
 }
 
 fn render(frame: &mut Frame, path: &str, app_state: &mut AppState) {
@@ -93,7 +139,7 @@ fn render(frame: &mut Frame, path: &str, app_state: &mut AppState) {
         .title_bottom(Line::from_iter([
             Span::from(" esc ").bold(),
             Span::styled(
-                "quit ",
+                "back ",
                 Style::default()
                     .fg(ColorScheme::White.color())
                     .bg(ColorScheme::Orange.color()),
@@ -137,40 +183,49 @@ fn render(frame: &mut Frame, path: &str, app_state: &mut AppState) {
         ]))
         .render(border_area, frame.buffer_mut());
 
-    let absolute_path = std::env::current_dir()
-        .map(|dir| dir.join(path))
-        .unwrap_or_else(|_| PathBuf::from(path));
+    if let Some(template) = &app_state.selected_template {
+        // pass
+    } else {
+        let absolute_path = std::env::current_dir()
+            .map(|dir| dir.join(path))
+            .unwrap_or_else(|_| PathBuf::from(path));
 
-    let reminder = Paragraph::new(Line::from(Span::styled(
-        format!(" Working Dir: 📁 {} ", absolute_path.display()),
-        Style::default()
-            .fg(ColorScheme::White.color())
-            .bg(ColorScheme::Orange.color()),
-    )))
-    .alignment(Alignment::Center);
+        let reminder = Paragraph::new(Line::from(Span::styled(
+            format!(" Working Dir: 📁 {} ", absolute_path.display()),
+            Style::default()
+                .fg(ColorScheme::White.color())
+                .bg(ColorScheme::Orange.color()),
+        )))
+        .alignment(Alignment::Center);
 
-    frame.render_widget(reminder, reminder_template);
+        frame.render_widget(reminder, reminder_template);
 
-    Block::bordered()
-        .border_type(BorderType::Rounded)
-        .fg(ColorScheme::Blue.color())
-        .title(
-            Span::from(" | 📃 Template Selection | ")
-                .bold()
-                .into_centered_line(),
+        Block::bordered()
+            .border_type(BorderType::Rounded)
+            .fg(ColorScheme::Blue.color())
+            .title(
+                Span::from(" | 📃 Template Selection | ")
+                    .bold()
+                    .into_centered_line(),
+            )
+            .title_bottom(Span::from("...").bold().into_centered_line())
+            .render(template_area, frame.buffer_mut());
+
+        let list = List::new(
+            app_state
+                .templates
+                .iter()
+                .map(|template: &TemplateSet| ListItem::from(template.name.as_str())),
         )
-        .title_bottom(Span::from("...").bold().into_centered_line())
-        .render(template_area, frame.buffer_mut());
+        .highlight_symbol(" > ")
+        .scroll_padding(1)
+        .highlight_style(
+            Style::default()
+                .fg(ColorScheme::White.color())
+                .bg(ColorScheme::Green.color())
+                .add_modifier(Modifier::BOLD | Modifier::ITALIC),
+        );
 
-    let list = List::new(app_state.templates.iter().map(|template: &TemplateSet| {
-        ListItem::from(Span::from(format!(" > {}", template.name.as_str())))
-    }))
-    .highlight_style(
-        Style::default()
-            .fg(ColorScheme::White.color())
-            .bg(ColorScheme::Green.color())
-            .add_modifier(Modifier::BOLD | Modifier::ITALIC),
-    );
-
-    frame.render_stateful_widget(list, list_area, &mut app_state.list_state);
+        frame.render_stateful_widget(list, list_area, &mut app_state.list_state);
+    }
 }
