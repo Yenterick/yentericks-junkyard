@@ -4,7 +4,7 @@ use std::{
 };
 
 use color_eyre::eyre::{Ok, Result};
-use crossterm::event::{KeyEvent, KeyEventKind};
+use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     crossterm::event::{self, Event},
@@ -18,20 +18,18 @@ use ratatui::{
 // Custom imports
 use crate::{
     models::model::Model,
-    view::{
-        color_scheme::ColorScheme,
-        model_box::ModelBox,
-        screen_action::{self, ScreenAction},
-    },
+    view::{color_scheme::ColorScheme, model_box::ModelBox, screen_action::ScreenAction},
 };
 
 #[derive(Debug, Default)]
-struct AppState {
-    models: Vec<Model>,
+pub struct AppState {
+    pub models: Vec<Model>,
     templates: Vec<TemplateSet>,
     list_state: ListState,
     selected_template: Option<TemplateSet>,
+    selected_model: Option<Model>,
     models_state: ListState,
+    pub add_model: bool,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -55,7 +53,9 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
         templates: vec![template_set],
         list_state,
         selected_template: None,
+        selected_model: None,
         models_state: models_state,
+        add_model: false,
     };
 
     loop {
@@ -69,7 +69,7 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
             }
 
             if state.selected_template.is_some() {
-                match handle_add_models(key, &mut state) {
+                match handle_models(key, &mut state) {
                     ScreenAction::Back => {
                         state.selected_template = None;
                     }
@@ -114,9 +114,19 @@ fn handle_key(key: KeyEvent, state: &mut AppState) -> ScreenAction {
     }
 }
 
-fn handle_add_models(key: KeyEvent, state: &mut AppState) -> ScreenAction {
+fn handle_models(key: KeyEvent, state: &mut AppState) -> ScreenAction {
     match key.code {
         event::KeyCode::Esc => ScreenAction::Back,
+
+        event::KeyCode::Char('A') => {
+            state.add_model = true;
+            ScreenAction::None
+        }
+
+        event::KeyCode::Char('C') => {
+            // Create project
+            ScreenAction::Confirm
+        }
 
         event::KeyCode::Char('k') => {
             state.models_state.select_previous();
@@ -132,7 +142,15 @@ fn handle_add_models(key: KeyEvent, state: &mut AppState) -> ScreenAction {
     }
 }
 
-fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
+fn handle_add_model(key: KeyEvent, state: &mut AppState) -> ScreenAction {
+    match key.code {
+        event::KeyCode::Enter => ScreenAction::Confirm,
+
+        _ => ScreenAction::None,
+    }
+}
+
+fn render(frame: &mut Frame, path: &str, name: &str, mut app_state: &mut AppState) {
     let [border_area] = Layout::vertical([Constraint::Fill(1)])
         .margin(1)
         .areas(frame.area());
@@ -161,7 +179,11 @@ fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
         .title_bottom(Line::from_iter([
             Span::from(" esc ").bold(),
             Span::styled(
-                "back ",
+                if app_state.selected_model.is_some() || app_state.selected_template.is_some() {
+                    "back "
+                } else {
+                    "exit "
+                },
                 Style::default()
                     .fg(ColorScheme::White.color())
                     .bg(ColorScheme::Orange.color()),
@@ -208,10 +230,10 @@ fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
     if let Some(_) = &app_state.selected_template {
         frame.render_stateful_widget(
             ModelBox {
-                models: &app_state.models,
+                name: String::from("Model Box"),
             },
             vertical_area,
-            &mut app_state.models_state,
+            &mut app_state,
         );
     } else {
         Block::bordered()
@@ -248,7 +270,11 @@ fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
         .unwrap_or_else(|_| PathBuf::from(path));
 
     let reminder = Paragraph::new(Line::from(Span::styled(
-        format!(" Generating \"{}\" on : 📁 {} ", name, absolute_path.display()),
+        format!(
+            " Generating \"{}\" on : 📁 {} ",
+            name,
+            absolute_path.display()
+        ),
         Style::default()
             .fg(ColorScheme::White.color())
             .bg(ColorScheme::Orange.color()),

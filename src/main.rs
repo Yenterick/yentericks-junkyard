@@ -19,7 +19,11 @@ fn main() -> Result<()> {
 
     // Creating the ratatui terminal
     let terminal = ratatui::init();
-    let result = app::run(terminal, &app_path.unwrap_or(String::from(".")), &app_name.unwrap_or(String::from("server")));
+    let result = app::run(
+        terminal,
+        &app_path.unwrap_or(String::from(".")),
+        &app_name.unwrap_or(String::from("server")),
+    );
     ratatui::restore();
 
     result
