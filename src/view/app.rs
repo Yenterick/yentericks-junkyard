@@ -16,6 +16,7 @@ use crate::{
     models::model::{Field, Model},
     view::{
         color_scheme::ColorScheme,
+        field_box::{FieldBox, FieldBoxState},
         model_box::{ModelBox, ModelBoxState},
         screen_action::ScreenAction,
     },
@@ -27,8 +28,9 @@ pub struct AppState {
     templates: Vec<TemplateSet>,
     list_state: ListState,
     selected_template: Option<TemplateSet>,
-    selected_model: Option<Model>,
+    selected_model: Option<usize>,
     models_state: ModelBoxState,
+    fields_state: FieldBoxState,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -51,6 +53,7 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
         selected_template: None,
         selected_model: None,
         models_state: ModelBoxState::default(),
+        fields_state: FieldBoxState::default(),
     };
 
     loop {
@@ -63,7 +66,15 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
                 continue;
             }
 
-            if state.models_state.add_mode {
+            if state.selected_model.is_some() {
+                match handle_fields(key, &mut state) {
+                    ScreenAction::Back => {
+                        state.selected_model = None;
+                    }
+
+                    _ => {}
+                }
+            } else if state.models_state.add_mode {
                 match handle_add_model(key, &mut state) {
                     ScreenAction::Back => {
                         state.models_state.input_buffer.clear();
@@ -87,13 +98,12 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
                         state.selected_template = None;
                     }
 
-                    ScreenAction::None => {}
                     _ => {}
                 }
             } else {
                 match handle_key(key, &mut state) {
                     ScreenAction::Exit => break,
-                    ScreenAction::None => {}
+
                     _ => {}
                 }
             }
@@ -130,6 +140,11 @@ fn handle_key(key: KeyEvent, state: &mut AppState) -> ScreenAction {
 fn handle_models(key: KeyEvent, state: &mut AppState) -> ScreenAction {
     match key.code {
         event::KeyCode::Esc => ScreenAction::Back,
+
+        event::KeyCode::Enter => {
+            state.selected_model = Some(state.models_state.selected());
+            ScreenAction::None
+        }
 
         event::KeyCode::Char('A') => {
             state.models_state.add_mode = true;
@@ -192,6 +207,34 @@ fn handle_add_model(key: KeyEvent, state: &mut AppState) -> ScreenAction {
 
         event::KeyCode::Backspace => {
             state.models_state.input_buffer.pop();
+            ScreenAction::None
+        }
+
+        _ => ScreenAction::None,
+    }
+}
+
+fn handle_fields(key: KeyEvent, state: &mut AppState) -> ScreenAction {
+    match key.code {
+        event::KeyCode::Esc => ScreenAction::Back,
+
+        event::KeyCode::Char('A') => {
+            state.fields_state.add_mode = true;
+            ScreenAction::None
+        }
+
+        event::KeyCode::Char('D') => {
+            // TODO: Handle delete field
+            ScreenAction::None
+        }
+
+        event::KeyCode::Char('k') => {
+            state.fields_state.select_previous();
+            ScreenAction::None
+        }
+
+        event::KeyCode::Char('j') => {
+            state.fields_state.select_next();
             ScreenAction::None
         }
 
@@ -276,7 +319,15 @@ fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
         ]))
         .render(border_area, frame.buffer_mut());
 
-    if let Some(_) = &app_state.selected_template {
+    if let Some(index) = app_state.selected_model {
+        frame.render_stateful_widget(
+            FieldBox {
+                model: &app_state.models[index],
+            },
+            vertical_area,
+            &mut app_state.fields_state,
+        );
+    } else if app_state.selected_template.is_some() {
         frame.render_stateful_widget(
             ModelBox {
                 models: &app_state.models,
@@ -296,7 +347,7 @@ fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
             .title_bottom(Span::from("...").bold().into_centered_line())
             .render(template_area, frame.buffer_mut());
 
-        let list: List<'_> = List::new(
+        let list: List = List::new(
             app_state
                 .templates
                 .iter()
