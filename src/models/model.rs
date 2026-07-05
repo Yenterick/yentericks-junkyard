@@ -5,7 +5,7 @@ use capitalize::Capitalize;
 // Custom imports
 use crate::filesystem::files;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Model {
     pub name: String,
     pub fields: Vec<Field>,

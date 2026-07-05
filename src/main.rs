@@ -1,4 +1,4 @@
-use color_eyre::eyre::{Ok, Result};
+use color_eyre::eyre::Result;
 use std::env;
 
 // Custom imports

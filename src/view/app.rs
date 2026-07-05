@@ -1,24 +1,24 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::path::PathBuf;
 
-use color_eyre::eyre::{Ok, Result};
-use crossterm::event::{KeyCode, KeyEvent, KeyEventKind};
+use color_eyre::eyre::Result;
+use crossterm::event::{KeyEvent, KeyEventKind};
 use ratatui::{
     DefaultTerminal, Frame,
     crossterm::event::{self, Event},
     layout::{Alignment, Constraint, Flex, Layout},
-    style::{Color, Modifier, Style, Stylize},
-    symbols::border,
-    text::{Line, Span, ToSpan},
-    widgets::{Block, BorderType, List, ListItem, ListState, Padding, Paragraph, Widget, Wrap},
+    style::{Modifier, Style, Stylize},
+    text::{Line, Span},
+    widgets::{Block, BorderType, List, ListItem, ListState, Paragraph, Widget},
 };
 
 // Custom imports
 use crate::{
-    models::model::Model,
-    view::{color_scheme::ColorScheme, model_box::ModelBox, screen_action::ScreenAction},
+    models::model::{Field, Model},
+    view::{
+        color_scheme::ColorScheme,
+        model_box::{ModelBox, ModelBoxState},
+        screen_action::ScreenAction,
+    },
 };
 
 #[derive(Debug, Default)]
@@ -28,8 +28,7 @@ pub struct AppState {
     list_state: ListState,
     selected_template: Option<TemplateSet>,
     selected_model: Option<Model>,
-    models_state: ListState,
-    pub add_model: bool,
+    models_state: ModelBoxState,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -45,17 +44,13 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
     let mut list_state: ListState = ListState::default();
     list_state.select(Some(0));
 
-    let mut models_state: ListState = ListState::default();
-    models_state.select(Some(0));
-
     let mut state: AppState = AppState {
         models: vec![],
         templates: vec![template_set],
         list_state,
         selected_template: None,
         selected_model: None,
-        models_state: models_state,
-        add_model: false,
+        models_state: ModelBoxState::default(),
     };
 
     loop {
@@ -68,7 +63,25 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
                 continue;
             }
 
-            if state.selected_template.is_some() {
+            if state.models_state.add_mode {
+                match handle_add_model(key, &mut state) {
+                    ScreenAction::Back => {
+                        state.models_state.input_buffer.clear();
+                        state.models_state.add_mode = false;
+                    }
+
+                    ScreenAction::Confirm => {
+                        state.models.push(Model {
+                            name: state.models_state.input_buffer.clone().to_lowercase(),
+                            fields: vec![],
+                        });
+                        state.models_state.input_buffer.clear();
+                        state.models_state.add_mode = false;
+                    }
+
+                    _ => {}
+                }
+            } else if state.selected_template.is_some() {
                 match handle_models(key, &mut state) {
                     ScreenAction::Back => {
                         state.selected_template = None;
@@ -119,14 +132,16 @@ fn handle_models(key: KeyEvent, state: &mut AppState) -> ScreenAction {
         event::KeyCode::Esc => ScreenAction::Back,
 
         event::KeyCode::Char('A') => {
-            state.add_model = true;
+            state.models_state.add_mode = true;
             ScreenAction::None
         }
 
-        event::KeyCode::Char('C') => {
-            // Create project
-            ScreenAction::Confirm
+        event::KeyCode::Char('D') => {
+            state.models.remove(state.models_state.selected());
+            ScreenAction::None
         }
+
+        event::KeyCode::Char('C') => ScreenAction::Confirm,
 
         event::KeyCode::Char('k') => {
             state.models_state.select_previous();
@@ -144,13 +159,47 @@ fn handle_models(key: KeyEvent, state: &mut AppState) -> ScreenAction {
 
 fn handle_add_model(key: KeyEvent, state: &mut AppState) -> ScreenAction {
     match key.code {
-        event::KeyCode::Enter => ScreenAction::Confirm,
+        event::KeyCode::Enter => {
+            if !state.models_state.input_buffer.trim().is_empty()
+                && !state
+                    .models_state
+                    .input_buffer
+                    .strip_prefix('_')
+                    .is_some_and(|s| !s.is_empty())
+            {
+                state.models_state.input_buffer =
+                    if let Some(value) = state.models_state.input_buffer.trim().strip_prefix('_') {
+                        value.to_string()
+                    } else {
+                        state.models_state.input_buffer.clone()
+                    };
+                return ScreenAction::Confirm;
+            }
+            ScreenAction::Back
+        }
+
+        event::KeyCode::Esc => ScreenAction::Back,
+
+        event::KeyCode::Char(c) => {
+            if c != ' ' {
+                state.models_state.input_buffer.push(c);
+            } else {
+                state.models_state.input_buffer.push('_');
+            }
+
+            ScreenAction::None
+        }
+
+        event::KeyCode::Backspace => {
+            state.models_state.input_buffer.pop();
+            ScreenAction::None
+        }
 
         _ => ScreenAction::None,
     }
 }
 
-fn render(frame: &mut Frame, path: &str, name: &str, mut app_state: &mut AppState) {
+fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
     let [border_area] = Layout::vertical([Constraint::Fill(1)])
         .margin(1)
         .areas(frame.area());
@@ -230,10 +279,10 @@ fn render(frame: &mut Frame, path: &str, name: &str, mut app_state: &mut AppStat
     if let Some(_) = &app_state.selected_template {
         frame.render_stateful_widget(
             ModelBox {
-                name: String::from("Model Box"),
+                models: &app_state.models,
             },
             vertical_area,
-            &mut app_state,
+            &mut app_state.models_state,
         );
     } else {
         Block::bordered()
