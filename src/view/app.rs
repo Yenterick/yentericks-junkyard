@@ -72,7 +72,7 @@ pub fn run(mut terminal: DefaultTerminal, path: &str, name: &str) -> Result<()> 
 
                     ScreenAction::Confirm => {
                         state.models.push(Model {
-                            name: state.models_state.input_buffer.clone().to_lowercase(),
+                            name: state.models_state.input_buffer.clone(),
                             fields: vec![],
                         });
                         state.models_state.input_buffer.clear();
@@ -182,7 +182,7 @@ fn handle_add_model(key: KeyEvent, state: &mut AppState) -> ScreenAction {
 
         event::KeyCode::Char(c) => {
             if c != ' ' {
-                state.models_state.input_buffer.push(c);
+                state.models_state.input_buffer.push(c.to_ascii_lowercase());
             } else {
                 state.models_state.input_buffer.push('_');
             }
