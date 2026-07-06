@@ -2,9 +2,11 @@ use color_eyre::eyre::Result;
 use std::env;
 
 // Custom imports
-use crate::view::app;
+// use crate::view::app;
+use crate::cli::app;
 
 // Module config
+mod cli;
 mod filesystem;
 mod generators;
 mod models;
@@ -19,11 +21,7 @@ fn main() -> Result<()> {
 
     // Creating the ratatui terminal
     let terminal = ratatui::init();
-    let result = app::run(
-        terminal,
-        &app_path.unwrap_or(String::from(".")),
-        &app_name.unwrap_or(String::from("server")),
-    );
+    let result = app::run(terminal);
     ratatui::restore();
 
     result

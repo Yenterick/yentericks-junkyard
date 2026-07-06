@@ -59,7 +59,7 @@ impl<'a> StatefulWidget for FieldBox<'a> {
             .border_type(BorderType::Rounded)
             .fg(ColorScheme::Silver.color())
             .title(
-                Span::from(format!("| 🔩 {} |", self.model.name))
+                Span::from(format!("| {} |", self.model.name))
                     .bold()
                     .into_centered_line(),
             )

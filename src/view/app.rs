@@ -196,7 +196,7 @@ fn handle_add_model(key: KeyEvent, state: &mut AppState) -> ScreenAction {
         event::KeyCode::Esc => ScreenAction::Back,
 
         event::KeyCode::Char(c) => {
-            if c != ' ' {
+            if c != ' ' && state.models_state.input_buffer.len() < 16 {
                 state.models_state.input_buffer.push(c.to_ascii_lowercase());
             } else {
                 state.models_state.input_buffer.push('_');
@@ -252,7 +252,7 @@ fn render(frame: &mut Frame, path: &str, name: &str, app_state: &mut AppState) {
             .flex(Flex::Center)
             .areas(border_area);
 
-    let [template_area] = Layout::horizontal([Constraint::Length(32)])
+    let [template_area] = Layout::horizontal([Constraint::Length(36)])
         .flex(Flex::Center)
         .areas(vertical_area);
 
