@@ -28,6 +28,11 @@ impl Widget for Outline {
                     .bold()
                     .fg(ColorScheme::INK_BLACK)
                     .bg(ColorScheme::AIR_FORCE_BLUE),
+                Span::from(" q "),
+                Span::from("back ")
+                    .bold()
+                    .fg(ColorScheme::INK_BLACK)
+                    .bg(ColorScheme::AIR_FORCE_BLUE),
                 Span::from(" h "),
                 Span::from("left ")
                     .bold()

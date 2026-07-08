@@ -1,24 +1,24 @@
-use std::collections::HashMap;
+use std::vec::Vec;
 
-use crate::cli::events::{page::Page, page_status::PageStatus};
+use crate::cli::events::{page_status::PageStatus, pages::Pages};
 
 pub struct SidebarState {
-    pub current_page: Page,
-    pub page_status: HashMap<Page, PageStatus>,
+    pub current_page: Pages,
+    pub page_status: Vec<(Pages, PageStatus)>,
 }
 
 impl SidebarState {
     pub fn new() -> SidebarState {
-        let mut page_status = HashMap::new();
+        let mut page_status = Vec::new();
 
-        page_status.insert(Page::TemplateSelection, PageStatus::InProcess);
-        page_status.insert(Page::Models, PageStatus::Locked);
-        page_status.insert(Page::Fields, PageStatus::Locked);
-        page_status.insert(Page::ProjectConfiguration, PageStatus::Locked);
-        page_status.insert(Page::Generation, PageStatus::Locked);
+        page_status.push((Pages::TemplateSelection, PageStatus::InProcess));
+        page_status.push((Pages::Models, PageStatus::Locked));
+        page_status.push((Pages::Fields, PageStatus::Locked));
+        page_status.push((Pages::ProjectConfiguration, PageStatus::Locked));
+        page_status.push((Pages::Generation, PageStatus::Locked));
 
         SidebarState {
-            current_page: Page::TemplateSelection,
+            current_page: Pages::TemplateSelection,
             page_status,
         }
     }

@@ -1,4 +1,4 @@
-use crossterm::event::{self, KeyEvent};
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
@@ -35,11 +35,11 @@ impl ConfirmationModal {
 
     pub fn handle_key(&mut self, key: KeyEvent) {
         match key.code {
-            event::KeyCode::Char('y') | event::KeyCode::Char('Y') => {
+            KeyCode::Char('y') | KeyCode::Char('Y') => {
                 self.state.choice = Some(ConfirmationChoice::Yes);
             }
 
-            event::KeyCode::Char('n') | event::KeyCode::Char('N') => {
+            KeyCode::Char('n') | KeyCode::Char('N') => {
                 self.state.choice = Some(ConfirmationChoice::No);
             }
 
