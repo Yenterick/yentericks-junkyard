@@ -1,7 +1,7 @@
 use crossterm::event::{self, KeyEvent};
 use ratatui::{
     buffer::Buffer,
-    layout::{Constraint, Flex, Layout, Rect},
+    layout::{Constraint, Layout, Rect},
     style::Stylize,
     text::{Line, Span},
     widgets::{Block, BorderType, Clear, Paragraph, Widget},
@@ -50,13 +50,8 @@ impl ConfirmationModal {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let centered_area = area.centered(Constraint::Percentage(60), Constraint::Percentage(20));
+        let centered_area = area.centered(Constraint::Percentage(56), Constraint::Percentage(16));
         Clear.render(centered_area, buf);
-
-        let block: Block<'_> = Block::bordered()
-            .border_type(BorderType::Plain)
-            .bg(ColorScheme::BABY_BLUE)
-            .fg(ColorScheme::INK_BLACK);
 
         Block::bordered()
             .border_type(BorderType::Plain)
@@ -65,13 +60,15 @@ impl ConfirmationModal {
             .title(Span::from(" Confirmation ").into_centered_line())
             .render(centered_area, buf);
 
-        let inner: Rect = block.inner(centered_area);
-
-        let [text_area, buttons_area] =
-            Layout::vertical([Constraint::Fill(1), Constraint::Fill(1)])
-                .flex(Flex::Center)
-                .margin(1)
-                .areas(inner);
+        let [_, text_area, _, buttons_area, _] = Layout::vertical([
+            Constraint::Fill(1),
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Fill(1),
+        ])
+        .margin(1)
+        .areas(centered_area);
 
         Paragraph::new(self.content.to_owned())
             .centered()

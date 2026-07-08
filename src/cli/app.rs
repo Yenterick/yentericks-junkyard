@@ -3,13 +3,16 @@ use crossterm::event::{self, Event, KeyEventKind, KeyModifiers};
 use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Layout},
-    widgets::Widget,
+    prelude::Style,
+    style::Stylize,
+    widgets::{Block, BorderType, Borders, Padding, StatefulWidget, Widget},
 };
 
 use crate::cli::{
-    components::{confirmation_modal::ConfirmationModal, outline::Outline},
+    components::{confirmation_modal::ConfirmationModal, outline::Outline, sidebar::Sidebar},
     events::confirmation_choice::ConfirmationChoice,
     state::app_state::AppState,
+    theme::color_scheme::ColorScheme,
 };
 
 pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
@@ -55,7 +58,18 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
 fn render(frame: &mut Frame, app_state: &mut AppState) {
     let [complete] = Layout::horizontal([Constraint::Fill(1)]).areas(frame.area());
 
+    let [sidebar, page_content] = Layout::horizontal([Constraint::Fill(1), Constraint::Fill(3)])
+        .margin(1)
+        .areas(complete);
+
+    Block::new()
+        .borders(Borders::RIGHT)
+        .border_type(BorderType::Plain)
+        .fg(ColorScheme::AIR_FORCE_BLUE)
+        .render(sidebar, frame.buffer_mut());
+
     Outline.render(complete, frame.buffer_mut());
+    Sidebar.render(sidebar, frame.buffer_mut(), &mut app_state.sidebar_state);
 
     if let Some(modal) = &app_state.confirmation_modal {
         modal.render(complete, frame.buffer_mut());
