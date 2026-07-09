@@ -4,7 +4,7 @@ use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Layout},
     style::Stylize,
-    widgets::{Block, BorderType, Borders, Clear, StatefulWidget, Widget},
+    widgets::{Block, BorderType, Borders, StatefulWidget, Widget},
 };
 
 use crate::cli::{
@@ -72,6 +72,8 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
                         app_state.confirmation_modal = None;
                     }
                 }
+
+                continue;
             }
 
             match app_state.sidebar_state.current_page {

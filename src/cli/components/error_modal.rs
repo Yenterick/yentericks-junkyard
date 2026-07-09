@@ -28,15 +28,12 @@ impl ErrorModal {
         let centered_area = area.centered(Constraint::Percentage(56), Constraint::Length(4));
         Clear.render(centered_area, buf);
 
-        let block: Block = Block::bordered()
+        Block::bordered()
             .border_type(BorderType::Plain)
             .bg(ColorScheme::BRICK_EMBER)
             .fg(ColorScheme::INK_BLACK)
-            .title(Span::from(" Error ").into_centered_line());
-
-        let inner: Rect = block.inner(centered_area);
-
-        block.render(centered_area, buf);
+            .title(Span::from(" Error ").into_centered_line())
+            .render(centered_area, buf);
 
         let [_, text_area, button_area, _] = Layout::vertical([
             Constraint::Fill(1),
@@ -44,7 +41,7 @@ impl ErrorModal {
             Constraint::Length(1),
             Constraint::Fill(1),
         ])
-        .areas(inner);
+        .areas(centered_area);
 
         Paragraph::new(self.content.to_owned())
             .centered()

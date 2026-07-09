@@ -9,7 +9,10 @@ use ratatui::{
 
 use crate::{
     cli::{
-        events::{pages::Pages, screen_action::ScreenAction},
+        components::{confirmation_modal::ConfirmationModal, input_modal::InputModal},
+        events::{
+            confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction,
+        },
         pages::page::Page,
         state::models_state::ModelsState,
         theme::color_scheme::ColorScheme,
@@ -31,37 +34,91 @@ impl Page for Models {
     type State = ModelsState;
 
     fn handle_key(&mut self, key: KeyEvent, state: &mut Self::State) -> ScreenAction {
-        match (key.code, key.modifiers) {
-            (KeyCode::Char('j'), _) => {
-                state.list_state.select_next();
-                ScreenAction::None
+        if let Some(modal) = &mut state.input_modal {
+            match modal.handle_key(key) {
+                ScreenAction::Back => {
+                    state.input_modal = None;
+                    ScreenAction::None
+                }
+
+                ScreenAction::ReturnInput(input) => {
+                    self.models.push(Model {
+                        name: input,
+                        fields: Vec::new(),
+                    });
+                    state.list_state.select_last();
+                    state.input_modal = None;
+                    ScreenAction::None
+                }
+
+                ScreenAction::OpenError(error) => ScreenAction::OpenError(error),
+
+                _ => ScreenAction::None,
             }
+        } else if let Some(modal) = &mut state.delete_confirmation_modal {
+            modal.handle_key(key);
 
-            (KeyCode::Char('k'), _) => {
-                state.list_state.select_previous();
-                ScreenAction::None
-            }
+            match modal.choice().unwrap_or(ConfirmationChoice::No) {
+                ConfirmationChoice::Yes => {
+                    self.models.remove(state.list_state.selected().unwrap_or(0));
+                    state.delete_confirmation_modal = None;
+                    ScreenAction::None
+                }
 
-            (KeyCode::Char('q'), _) => ScreenAction::PreviousPage(Pages::TemplateSelection),
-
-            (KeyCode::Enter, _) => {
-                state.selected_model = state.list_state.selected();
-                ScreenAction::NextPage(Pages::Fields)
-            }
-
-            (KeyCode:: Char('a'), KeyModifiers::CONTROL) => {
-                ScreenAction::None
-            }
-
-            (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
-                if self.models.len() < 1 {
-                    ScreenAction::OpenError(String::from("You need to have at least one model!"))
-                } else {
-                    ScreenAction::NextPage(Pages::ProjectConfiguration)
+                ConfirmationChoice::No => {
+                    state.delete_confirmation_modal = None;
+                    ScreenAction::None
                 }
             }
+        } else {
+            match (key.code, key.modifiers) {
+                (KeyCode::Char('j'), _) => {
+                    state.list_state.select_next();
+                    ScreenAction::None
+                }
 
-            _ => ScreenAction::None,
+                (KeyCode::Char('k'), _) => {
+                    state.list_state.select_previous();
+                    ScreenAction::None
+                }
+
+                (KeyCode::Char('q'), _) => ScreenAction::PreviousPage(Pages::TemplateSelection),
+
+                (KeyCode::Enter, _) => {
+                    state.selected_model = state.list_state.selected();
+                    ScreenAction::NextPage(Pages::Fields)
+                }
+
+                (KeyCode::Char('a'), KeyModifiers::CONTROL) => {
+                    state.input_modal =
+                        Some(InputModal::new(String::from("Insert the new model name: ")));
+                    ScreenAction::None
+                }
+
+                (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
+                    if self.models.len() < 1 {
+                        ScreenAction::OpenError(String::from(
+                            "You need to have at least one model!",
+                        ))
+                    } else {
+                        ScreenAction::NextPage(Pages::ProjectConfiguration)
+                    }
+                }
+
+                (KeyCode::Char('d'), KeyModifiers::CONTROL) => {
+                    if self.models.len() < 1 {
+                        ScreenAction::OpenError(String::from("There's nothing to delete!"))
+                    } else {
+                        state.delete_confirmation_modal = Some(ConfirmationModal::new(format!(
+                            "Delete \"{}\"?",
+                            self.models[state.list_state.selected().unwrap_or(0)].name
+                        )));
+                        ScreenAction::None
+                    }
+                }
+
+                _ => ScreenAction::None,
+            }
         }
     }
 
@@ -110,5 +167,13 @@ impl Page for Models {
         );
 
         StatefulWidget::render(list, list_area, buf, &mut state.list_state);
+
+        if let Some(modal) = &state.input_modal {
+            modal.render(area, buf);
+        }
+
+        if let Some(modal) = &state.delete_confirmation_modal {
+            modal.render(area, buf);
+        }
     }
 }

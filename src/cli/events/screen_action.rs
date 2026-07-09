@@ -5,8 +5,9 @@ pub enum ScreenAction {
     Confirm,
     NextPage(Pages),
     PreviousPage(Pages),
-    OpenConfirmation(String),
     OpenError(String),
     TextInput(String),
+    ReturnInput(String),
+    Back,
     Exit,
 }
