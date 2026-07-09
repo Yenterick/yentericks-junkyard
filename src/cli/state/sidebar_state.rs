@@ -22,4 +22,32 @@ impl SidebarState {
             page_status,
         }
     }
+
+    pub fn go_to(&mut self, next: Pages) {
+        for (page, status) in &mut self.page_status {
+            if *page == self.current_page {
+                *status = PageStatus::Completed;
+            }
+
+            if *page == next {
+                *status = PageStatus::InProcess;
+            }
+        }
+
+        self.current_page = next;
+    }
+
+    pub fn go_back(&mut self, prev: Pages) {
+        for (page, status) in &mut self.page_status {
+            if *page == self.current_page {
+                *status = PageStatus::Locked;
+            }
+
+            if *page == prev {
+                *status = PageStatus::InProcess
+            }
+        }
+
+        self.current_page = prev;
+    }
 }

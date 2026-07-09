@@ -11,7 +11,7 @@ use crate::cli::{
     events::{pages::Pages, screen_action::ScreenAction},
     models::template::Template,
     pages::page::Page,
-    state::template_selection_status::TemplateSelectionStatus,
+    state::template_selection_state::TemplateSelectionState,
     theme::color_scheme::ColorScheme,
 };
 
@@ -19,8 +19,20 @@ pub struct TemplateSelection {
     pub templates: Vec<Template>,
 }
 
+impl TemplateSelection {
+    pub fn new() -> TemplateSelection {
+        let mut templates: Vec<Template> = Vec::new();
+        templates.push(Template {
+            name: String::from("Express - Sequelize"),
+            key: 1,
+        });
+
+        TemplateSelection { templates }
+    }
+}
+
 impl Page for TemplateSelection {
-    type State = TemplateSelectionStatus;
+    type State = TemplateSelectionState;
 
     fn handle_key(&mut self, key: KeyEvent, state: &mut Self::State) -> ScreenAction {
         match key.code {
