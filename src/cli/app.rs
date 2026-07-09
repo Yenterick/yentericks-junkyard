@@ -8,7 +8,10 @@ use ratatui::{
 };
 
 use crate::cli::{
-    components::{confirmation_modal::ConfirmationModal, outline::Outline, sidebar::Sidebar},
+    components::{
+        confirmation_modal::ConfirmationModal, error_modal::ErrorModal, outline::Outline,
+        sidebar::Sidebar,
+    },
     events::{confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction},
     pages::{models::Models, page::Page, template_selection::TemplateSelection},
     state::app_state::AppState,
@@ -33,6 +36,17 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
         if let Event::Key(key) = event::read()? {
             if key.kind != KeyEventKind::Press {
                 continue;
+            }
+
+            if let Some(modal) = &mut app_state.error_modal {
+                match modal.handle_key(key) {
+                    ScreenAction::Confirm => {
+                        app_state.error_modal = None;
+                        continue;
+                    }
+
+                    _ => {}
+                }
             }
 
             match (key.code, key.modifiers) {
@@ -60,8 +74,8 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
                 }
             }
 
-            if app_state.sidebar_state.current_page == Pages::TemplateSelection {
-                match template_selection_page
+            match app_state.sidebar_state.current_page {
+                Pages::TemplateSelection => match template_selection_page
                     .handle_key(key, &mut app_state.template_selection_state)
                 {
                     ScreenAction::NextPage(page) => {
@@ -69,15 +83,23 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
                     }
 
                     _ => {}
-                }
-            } else if app_state.sidebar_state.current_page == Pages::Models {
-                match models_page.handle_key(key, &mut app_state.models_state) {
+                },
+
+                Pages::Models => match models_page.handle_key(key, &mut app_state.models_state) {
                     ScreenAction::PreviousPage(page) => {
                         app_state.sidebar_state.go_back(page);
                     }
 
+                    ScreenAction::OpenError(error) => {
+                        app_state.error_modal = Some(ErrorModal::new(String::from(error)));
+                    }
+
                     _ => {}
-                }
+                },
+
+                Pages::Fields => todo!(),
+                Pages::ProjectConfiguration => todo!(),
+                Pages::Generation => todo!(),
             }
         }
     }
@@ -122,6 +144,10 @@ fn render(
         ),
 
         _ => {}
+    }
+
+    if let Some(modal) = &app_state.error_modal {
+        modal.render(complete, frame.buffer_mut());
     }
 
     if let Some(modal) = &app_state.confirmation_modal {

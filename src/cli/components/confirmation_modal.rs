@@ -50,7 +50,7 @@ impl ConfirmationModal {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let centered_area = area.centered(Constraint::Percentage(56), Constraint::Percentage(16));
+        let centered_area = area.centered(Constraint::Percentage(56), Constraint::Length(4));
         Clear.render(centered_area, buf);
 
         Block::bordered()
@@ -60,9 +60,8 @@ impl ConfirmationModal {
             .title(Span::from(" Confirmation ").into_centered_line())
             .render(centered_area, buf);
 
-        let [_, text_area, _, buttons_area, _] = Layout::vertical([
+        let [_, text_area, buttons_area, _] = Layout::vertical([
             Constraint::Fill(1),
-            Constraint::Length(1),
             Constraint::Length(1),
             Constraint::Length(1),
             Constraint::Fill(1),

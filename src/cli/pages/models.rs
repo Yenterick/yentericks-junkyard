@@ -44,9 +44,21 @@ impl Page for Models {
 
             (KeyCode::Char('q'), _) => ScreenAction::PreviousPage(Pages::TemplateSelection),
 
-            (KeyCode::Enter, KeyModifiers::CONTROL) => {
+            (KeyCode::Enter, _) => {
                 state.selected_model = state.list_state.selected();
                 ScreenAction::NextPage(Pages::Fields)
+            }
+
+            (KeyCode:: Char('a'), KeyModifiers::CONTROL) => {
+                ScreenAction::None
+            }
+
+            (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
+                if self.models.len() < 1 {
+                    ScreenAction::OpenError(String::from("You need to have at least one model!"))
+                } else {
+                    ScreenAction::NextPage(Pages::ProjectConfiguration)
+                }
             }
 
             _ => ScreenAction::None,
