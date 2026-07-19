@@ -1,7 +1,7 @@
 use crate::cli::{
     components::{confirmation_modal::ConfirmationModal, error_modal::ErrorModal},
     state::{
-        models_state::ModelsState, sidebar_state::SidebarState,
+        fields_state::FieldsState, models_state::ModelsState, sidebar_state::SidebarState,
         template_selection_state::TemplateSelectionState,
     },
 };
@@ -12,6 +12,7 @@ pub struct AppState {
     pub sidebar_state: SidebarState,
     pub template_selection_state: TemplateSelectionState,
     pub models_state: ModelsState,
+    pub fields_state: FieldsState,
 }
 
 impl AppState {
@@ -22,6 +23,7 @@ impl AppState {
             sidebar_state: SidebarState::new(),
             template_selection_state: TemplateSelectionState::new(),
             models_state: ModelsState::new(),
+            fields_state: FieldsState::new(),
         }
     }
 }

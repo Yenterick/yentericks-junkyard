@@ -18,7 +18,7 @@ impl FieldsState {
             delete_confirmation_modal: None,
         };
 
-        status.list_state.select_first();
+        status.list_state.select(Some(3));
         status
     }
 }

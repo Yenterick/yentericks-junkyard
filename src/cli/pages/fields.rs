@@ -1,4 +1,4 @@
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
     buffer::Buffer,
     layout::{Constraint, Layout, Rect},
@@ -9,30 +9,98 @@ use ratatui::{
 
 use crate::{
     cli::{
-        events::screen_action::ScreenAction, pages::page::Page, state::fields_state::FieldsState,
+        components::confirmation_modal::ConfirmationModal,
+        events::{
+            confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction,
+        },
+        pages::page::Page,
+        state::fields_state::FieldsState,
         theme::color_scheme::ColorScheme,
     },
     models::model::{Field, Model},
 };
 
-pub struct Fields<'a> {
-    model: &'a mut Model,
+pub struct Fields {
+    pub selected_model: usize,
 }
 
-impl<'a> Fields<'a> {
-    pub fn from(model: &'a mut Model) -> Self {
-        Self { model }
+impl Fields {
+    pub fn new(selected_model: usize) -> Self {
+        Self { selected_model }
     }
 }
 
-impl<'a> Page for Fields<'a> {
-    type State = FieldsState;
+impl Fields {
+    pub fn handle_key(
+        &mut self,
+        key: KeyEvent,
+        state: &mut FieldsState,
+        models: &mut Vec<Model>,
+    ) -> ScreenAction {
+        if let Some(modal) = &mut state.delete_confirmation_modal {
+            modal.handle_key(key);
 
-    fn handle_key(&mut self, key: KeyEvent, state: &mut Self::State) -> ScreenAction {
-        ScreenAction::None
+            match modal.choice().unwrap_or(ConfirmationChoice::No) {
+                ConfirmationChoice::Yes => {
+                    models[self.selected_model]
+                        .fields
+                        .remove(state.list_state.selected().unwrap_or(2));
+                    state.delete_confirmation_modal = None;
+                    ScreenAction::None
+                }
+
+                ConfirmationChoice::No => {
+                    state.delete_confirmation_modal = None;
+                    ScreenAction::None
+                }
+            }
+        } else {
+            match (key.code, key.modifiers) {
+                (KeyCode::Char('j'), _) => {
+                    state.list_state.select_next();
+                    ScreenAction::None
+                }
+
+                (KeyCode::Char('k'), _) => {
+                    state.list_state.select_previous();
+                    ScreenAction::None
+                }
+
+                (KeyCode::Char('q'), _) => ScreenAction::PreviousPage(Pages::Models),
+
+                (KeyCode::Enter, _) => {
+                    state.selected_field = state.list_state.selected();
+                    ScreenAction::None
+                }
+
+                (KeyCode::Char('a'), KeyModifiers::CONTROL) => ScreenAction::None,
+
+                (KeyCode::Char('d'), KeyModifiers::CONTROL) => {
+                    if state.list_state.selected() <= Some(1) {
+                        ScreenAction::OpenError(String::from("You can't delete those fields!"))
+                    } else {
+                        state.delete_confirmation_modal = Some(ConfirmationModal::new(format!(
+                            "Delete \"{}\"?",
+                            models[self.selected_model].fields
+                                [state.list_state.selected().unwrap_or(2)]
+                            .name
+                        )));
+                        ScreenAction::None
+                    }
+                }
+
+                _ => ScreenAction::None,
+            }
+        }
     }
 
-    fn render(&self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+    pub fn render(
+        &self,
+        area: Rect,
+        buf: &mut Buffer,
+        state: &mut FieldsState,
+        models: &mut Vec<Model>,
+    ) {
         let centered_area: Rect =
             area.centered(Constraint::Percentage(50), Constraint::Percentage(50));
         let [list_area] = Layout::vertical([Constraint::Fill(1)])
@@ -42,7 +110,11 @@ impl<'a> Page for Fields<'a> {
         Block::bordered()
             .border_type(BorderType::Plain)
             .fg(ColorScheme::BABY_BLUE)
-            .title(Span::from(format!(" {} Fields ", self.model.name)).into_right_aligned_line().bold())
+            .title(
+                Span::from(format!(" {} Fields ", models[self.selected_model].name))
+                    .into_right_aligned_line()
+                    .bold(),
+            )
             .title_bottom(Line::from_iter([
                 Span::from(" ^a "),
                 Span::from("add ")
@@ -59,7 +131,7 @@ impl<'a> Page for Fields<'a> {
             .render(centered_area, buf);
 
         let list: List = List::new(
-            self.model
+            models[self.selected_model]
                 .fields
                 .iter()
                 .map(|field: &Field| ListItem::from(format!(" {}", &field.name))),

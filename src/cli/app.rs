@@ -11,14 +11,18 @@ use crate::cli::{
     components::{
         confirmation_modal::ConfirmationModal, error_modal::ErrorModal, outline::Outline,
         sidebar::Sidebar,
-    }, events::{confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction}, pages::{fields::Fields, models::Models, page::Page, template_selection::TemplateSelection}, state::app_state::AppState, theme::color_scheme::ColorScheme,
+    },
+    events::{confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction},
+    pages::{fields::Fields, models::Models, page::Page, template_selection::TemplateSelection},
+    state::app_state::AppState,
+    theme::color_scheme::ColorScheme,
 };
 
 pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
     let mut app_state: AppState = AppState::new();
     let mut template_selection_page: TemplateSelection = TemplateSelection::new();
     let mut models_page: Models = Models::new();
-    let mut fields_page: Option<Fields<'_>> = None;
+    let mut fields_page: Option<Fields> = None;
 
     loop {
         terminal.draw(|frame: &mut Frame<'_>| {
@@ -27,7 +31,7 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
                 &mut app_state,
                 &mut template_selection_page,
                 &mut models_page,
-                &mut fields_page
+                &mut fields_page,
             )
         })?;
 
@@ -92,7 +96,7 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
 
                     ScreenAction::NextPage(page) => {
                         if let Some(selected_model) = app_state.models_state.selected_model {
-                            fields_page = Some(Fields::from(&mut models_page.models[selected_model]));
+                            fields_page = Some(Fields::new(selected_model));
                         }
                         app_state.sidebar_state.go_to(page);
                     }
@@ -104,7 +108,27 @@ pub fn run(mut terminal: DefaultTerminal) -> Result<()> {
                     _ => {}
                 },
 
-                Pages::Fields => todo!(),
+                Pages::Fields => {
+                    if let Some(fields_page) = fields_page.as_mut() {
+                        match fields_page.handle_key(
+                            key,
+                            &mut app_state.fields_state,
+                            &mut models_page.models,
+                        ) {
+                            ScreenAction::PreviousPage(page) => {
+                                app_state.models_state.selected_model = None;
+                                app_state.sidebar_state.go_back(page);
+                            }
+
+                            ScreenAction::OpenError(error) => {
+                                app_state.error_modal = Some(ErrorModal::new(String::from(error)))
+                            }
+
+                            _ => {}
+                        }
+                    }
+                }
+
                 Pages::ProjectConfiguration => todo!(),
                 Pages::Generation => todo!(),
             }
@@ -119,7 +143,7 @@ fn render(
     app_state: &mut AppState,
     template_selection_page: &mut TemplateSelection,
     models_page: &mut Models,
-    fields_page: &mut Option<Fields>
+    fields_page: &mut Option<Fields>,
 ) {
     let [complete] = Layout::horizontal([Constraint::Fill(1)]).areas(frame.area());
 
@@ -151,7 +175,16 @@ fn render(
             &mut app_state.models_state,
         ),
 
-        Pages::Fields =
+        Pages::Fields => {
+            if let Some(fields_page) = fields_page.as_mut() {
+                fields_page.render(
+                    page_content,
+                    frame.buffer_mut(),
+                    &mut app_state.fields_state,
+                    &mut models_page.models,
+                );
+            }
+        }
 
         _ => {}
     }
