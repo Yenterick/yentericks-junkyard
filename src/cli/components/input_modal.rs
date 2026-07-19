@@ -56,7 +56,7 @@ impl InputModal {
                         };
                     return ScreenAction::ReturnInput(self.input_buffer.clone());
                 } else {
-                    ScreenAction::OpenError(String::from("The model name cannot be empty!"))
+                    ScreenAction::OpenError(String::from("The name cannot be empty!"))
                 }
             }
 

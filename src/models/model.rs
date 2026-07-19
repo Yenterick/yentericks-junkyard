@@ -56,6 +56,39 @@ pub enum DefaultValue {
     Now,
 }
 
+impl Model {
+    pub fn new(name: String) -> Self {
+        let mut model: Model = Model {
+            name,
+            fields: Vec::new(),
+        };
+
+        model.fields.push(Field {
+            name: format!("{}_id", model.name),
+            data_type: DataType::PrimaryKey,
+            primary_key: true,
+            auto_increment: true,
+            foreign_key: None,
+            unique: true,
+            allow_null: false,
+            default: None,
+        });
+
+        model.fields.push(Field {
+            name: "created_at".to_string(),
+            data_type: DataType::CurrentDate,
+            primary_key: false,
+            auto_increment: false,
+            foreign_key: None,
+            unique: false,
+            allow_null: false,
+            default: Some(DefaultValue::Now),
+        });
+
+        model
+    }
+}
+
 impl DataType {
     pub fn as_typescript(&self) -> &'static str {
         match self {

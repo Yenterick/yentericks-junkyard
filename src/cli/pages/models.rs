@@ -21,7 +21,7 @@ use crate::{
 };
 
 pub struct Models {
-    models: Vec<Model>,
+    pub models: Vec<Model>,
 }
 
 impl Models {
@@ -42,10 +42,7 @@ impl Page for Models {
                 }
 
                 ScreenAction::ReturnInput(input) => {
-                    self.models.push(Model {
-                        name: input,
-                        fields: Vec::new(),
-                    });
+                    self.models.push(Model::new(input));
                     state.list_state.select_last();
                     state.input_modal = None;
                     ScreenAction::None
