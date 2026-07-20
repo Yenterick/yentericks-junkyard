@@ -1576,6 +1576,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "tui-checkbox"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c58a691322aaf315585a8c6e4d61aff48900071fc00a5c1e5f84f5494fc59be"
+dependencies = [
+ "ratatui",
+]
+
+[[package]]
 name = "typenum"
 version = "1.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1838,4 +1847,5 @@ dependencies = [
  "color-eyre",
  "crossterm",
  "ratatui",
+ "tui-checkbox",
 ]

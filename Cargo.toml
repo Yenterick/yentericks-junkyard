@@ -15,6 +15,7 @@ capitalize = "0.3.4"
 color-eyre = "0.6.5"
 crossterm = "0.29.0"
 ratatui = { version = "0.30.1", features = ["all-widgets"] } 
+tui-checkbox = "0.4.6"
 
 [profile.release]
 panic = 'abort'

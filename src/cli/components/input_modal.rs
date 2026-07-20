@@ -67,7 +67,7 @@ impl InputModal {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let centered_area = area.centered(Constraint::Percentage(56), Constraint::Length(4));
+        let centered_area: Rect = area.centered(Constraint::Percentage(56), Constraint::Length(4));
         Clear.render(centered_area, buf);
 
         Block::bordered()

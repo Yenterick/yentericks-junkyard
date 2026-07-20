@@ -9,11 +9,10 @@ use ratatui::{
 
 use crate::{
     cli::{
-        components::confirmation_modal::ConfirmationModal,
+        components::{confirmation_modal::ConfirmationModal, field_modal::FieldModal},
         events::{
             confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction,
         },
-        pages::page::Page,
         state::fields_state::FieldsState,
         theme::color_scheme::ColorScheme,
     },
@@ -37,7 +36,24 @@ impl Fields {
         state: &mut FieldsState,
         models: &mut Vec<Model>,
     ) -> ScreenAction {
-        if let Some(modal) = &mut state.delete_confirmation_modal {
+        if let Some(modal) = &mut state.input_modal {
+            match modal.handle_key(key) {
+                ScreenAction::Back => {
+                    state.input_modal = None;
+                    ScreenAction::None
+                }
+
+                ScreenAction::ReturnField(field) => {
+                    models[self.selected_model].fields.push(field);
+                    state.input_modal = None;
+                    ScreenAction::None
+                }
+
+                ScreenAction::OpenError(error) => ScreenAction::OpenError(error),
+
+                _ => ScreenAction::None,
+            }
+        } else if let Some(modal) = &mut state.delete_confirmation_modal {
             modal.handle_key(key);
 
             match modal.choice().unwrap_or(ConfirmationChoice::No) {
@@ -68,12 +84,11 @@ impl Fields {
 
                 (KeyCode::Char('q'), _) => ScreenAction::PreviousPage(Pages::Models),
 
-                (KeyCode::Enter, _) => {
-                    state.selected_field = state.list_state.selected();
+                (KeyCode::Char('a'), KeyModifiers::CONTROL) => {
+                    state.input_modal =
+                        Some(FieldModal::new(models[self.selected_model].name.to_owned()));
                     ScreenAction::None
                 }
-
-                (KeyCode::Char('a'), KeyModifiers::CONTROL) => ScreenAction::None,
 
                 (KeyCode::Char('d'), KeyModifiers::CONTROL) => {
                     if state.list_state.selected() <= Some(1) {
@@ -146,7 +161,7 @@ impl Fields {
 
         StatefulWidget::render(list, list_area, buf, &mut state.list_state);
 
-        if let Some(modal) = &state.input_modal {
+        if let Some(modal) = state.input_modal.as_mut() {
             modal.render(area, buf);
         }
 

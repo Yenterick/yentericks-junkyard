@@ -1,11 +1,11 @@
 use ratatui::widgets::ListState;
 
-use crate::cli::components::{confirmation_modal::ConfirmationModal, input_modal::InputModal};
+use crate::cli::components::{confirmation_modal::ConfirmationModal, field_modal::FieldModal};
 
 pub struct FieldsState {
     pub list_state: ListState,
     pub selected_field: Option<usize>,
-    pub input_modal: Option<InputModal>,
+    pub input_modal: Option<FieldModal>,
     pub delete_confirmation_modal: Option<ConfirmationModal>,
 }
 
@@ -18,7 +18,7 @@ impl FieldsState {
             delete_confirmation_modal: None,
         };
 
-        status.list_state.select(Some(3));
+        status.list_state.select(Some(2));
         status
     }
 }

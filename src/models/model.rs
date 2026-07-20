@@ -126,6 +126,19 @@ impl DefaultValue {
 }
 
 impl Field {
+    pub fn new(name: String, data_type: DataType, unique: bool, allow_null: bool) -> Field {
+        Field {
+            name,
+            data_type,
+            primary_key: false,
+            auto_increment: false,
+            foreign_key: None,
+            unique,
+            allow_null,
+            default: None,
+        }
+    }
+
     pub fn render(&self, template: &str) -> String {
         let template_content: String = template.to_string();
 
