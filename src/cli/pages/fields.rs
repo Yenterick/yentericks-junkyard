@@ -9,7 +9,10 @@ use ratatui::{
 
 use crate::{
     cli::{
-        components::{confirmation_modal::ConfirmationModal, field_modal::FieldModal},
+        components::{
+            confirmation_modal::ConfirmationModal, field_modal::FieldModal,
+            foreign_modal::ForeignModal,
+        },
         events::{
             confirmation_choice::ConfirmationChoice, pages::Pages, screen_action::ScreenAction,
         },
@@ -36,7 +39,22 @@ impl Fields {
         state: &mut FieldsState,
         models: &mut Vec<Model>,
     ) -> ScreenAction {
-        if let Some(modal) = &mut state.input_modal {
+        if let Some(model) = state.foreign_modal.as_mut() {
+            match model.handle_key(key) {
+                ScreenAction::Back => {
+                    state.foreign_modal = None;
+                    ScreenAction::None
+                }
+
+                ScreenAction::ReturnField(field) => {
+                    models[self.selected_model].fields.push(field);
+                    state.foreign_modal = None;
+                    ScreenAction::None
+                }
+
+                _ => ScreenAction::None,
+            }
+        } else if let Some(modal) = &mut state.input_modal {
             match modal.handle_key(key) {
                 ScreenAction::Back => {
                     state.input_modal = None;
@@ -90,6 +108,23 @@ impl Fields {
                     ScreenAction::None
                 }
 
+                (KeyCode::Char('f'), KeyModifiers::CONTROL) => {
+                    if models.len() > 1 {
+                        state.foreign_modal = Some(ForeignModal::new(
+                            models
+                                .iter()
+                                .filter(|model| model.name != models[self.selected_model].name)
+                                .map(|model| model.name.to_owned())
+                                .collect(),
+                            models[self.selected_model].name.to_owned(),
+                            String::from("Select the new Foreign Key"),
+                        ));
+                        ScreenAction::None
+                    } else {
+                        ScreenAction::OpenError(String::from("There's no models available!"))
+                    }
+                }
+
                 (KeyCode::Char('d'), KeyModifiers::CONTROL) => {
                     if state.list_state.selected() <= Some(1) {
                         ScreenAction::OpenError(String::from("You can't delete those fields!"))
@@ -141,6 +176,11 @@ impl Fields {
                     .bold()
                     .fg(ColorScheme::INK_BLACK)
                     .bg(ColorScheme::BABY_BLUE),
+                Span::from(" ^f "),
+                Span::from("foreign ")
+                    .bold()
+                    .fg(ColorScheme::INK_BLACK)
+                    .bg(ColorScheme::BABY_BLUE),
                 Span::from(" "),
             ]))
             .render(centered_area, buf);
@@ -160,6 +200,10 @@ impl Fields {
         );
 
         StatefulWidget::render(list, list_area, buf, &mut state.list_state);
+
+        if let Some(modal) = state.foreign_modal.as_mut() {
+            modal.render(area, buf);
+        }
 
         if let Some(modal) = state.input_modal.as_mut() {
             modal.render(area, buf);

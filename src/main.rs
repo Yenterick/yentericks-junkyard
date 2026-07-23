@@ -10,7 +10,6 @@ mod cli;
 mod filesystem;
 mod generators;
 mod models;
-mod view;
 
 fn main() -> Result<()> {
     color_eyre::install()?;

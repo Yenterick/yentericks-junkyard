@@ -139,6 +139,22 @@ impl Field {
         }
     }
 
+    pub fn foreign(source: String, destination: String) -> Field {
+        Field {
+            name: format!("{}_id", destination),
+            data_type: DataType::Integer,
+            primary_key: false,
+            auto_increment: false,
+            foreign_key: Some(ForeignKey {
+                model: destination.to_owned(),
+                field: format!("{}_id", destination),
+            }),
+            unique: false,
+            allow_null: false,
+            default: None,
+        }
+    }
+
     pub fn render(&self, template: &str) -> String {
         let template_content: String = template.to_string();
 
